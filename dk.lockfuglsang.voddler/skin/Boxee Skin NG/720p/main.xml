@@ -184,10 +184,10 @@ selectSorting()
 	            	</control><!-- list -->
 	            </control><!-- category -->
 	            <control type="button" id="301">
-	            	<posx>310</posx>
-	            	<posy>10</posy>
-	            	<width>34</width>
-	            	<height>34</height>
+	            	<posx>595</posx>
+	            	<posy>60</posy>
+	            	<width>32</width>
+	            	<height>32</height>
 	            	<label>-</label>
 	            	<align>center</align>
 	            	<focusedcolor>ffffffff</focusedcolor>
@@ -259,7 +259,7 @@ search()
 	            			<posy>0</posy>
 	            			<width>620</width>
 	            			<height>130</height>
-	            			<colordiffuse>22555555</colordiffuse>
+	            			<colordiffuse>6080FF80</colordiffuse>
 	            			<fadetime>200</fadetime>
 	            			<texture border="8">item_bg.png</texture>
 	            		</control>
@@ -279,17 +279,17 @@ search()
 			            	<control type="image">
 			            		<posx>0</posx>
 			            		<posy>5</posy>
-			            		<width>64</width>
-			            		<height>100</height>
+			            		<height>110</height>
+			            		<width>80</width>
 			            		<info>ListItem.Icon</info>
 			            		<aspectratio>keep</aspectratio>
 			            	</control>
 			            	<control type="group">
-				            	<posx>5</posx>
+				            	<posx>20</posx>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>8</posy>
-			                    	<width>450</width>
+			                    	<posy>0</posy>
+			                    	<width>505</width>
 			                    	<height>40</height>
 			                    	<font>font23b</font>
 			                    	<aligny>left</aligny>
@@ -298,7 +298,7 @@ search()
 			                	</control>
 			            		<control type="group"><!-- unfortunately progress is not very good atm. -->
 			            			<posx>69</posx>
-			            			<posy>34</posy>
+			            			<posy>26</posy>
 		            				<width>80</width>
 		            				<height>16</height>
 			            			<control type="image"><!-- disabled stars -->
@@ -311,26 +311,37 @@ search()
 			            				<height>16</height>
 			            				<texture>stars_$INFO[ListItem.property(custom:rating)].png</texture>
 			            			</control>
+				                	<control type="label">
+				                    	<posx>84</posx>
+				                    	<posy>1</posy>
+				                    	<width>200</width>
+				                    	<height>50</height>
+				                    	<font>font12b</font>
+				                    	<aligny>left</aligny>
+				                    	<info>ListItem.property(custom:details)</info>
+				                    	<textcolor>grey</textcolor>
+				                	</control>
 			            		</control>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>66</posy>
+			                    	<posy>42</posy>
 			                    	<width>450</width>
 			                    	<height>60</height>
 			                    	<font>font18</font>
 			                    	<aligny>left</aligny>
-			                    	<info>ListItem.property(custom:genres)</info>
+			                    	<label>$INFO[ListItem.property(custom:genres)]</label>
 			                    	<textcolor>grey</textcolor>
 			                	</control>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>88</posy>
-			                    	<width>450</width>
+			                    	<posy>65</posy>
+			                    	<width>370</width>
 			                    	<height>60</height>
-			                    	<font>font18</font>
+			                    	<font>font14</font>
 			                    	<aligny>left</aligny>
-			                    	<info>ListItem.property(custom:details)</info>
+			                    	<info>ListItem.property(custom:cast)</info>
 			                    	<textcolor>grey</textcolor>
+			                    	<wrapmultiline>true</wrapmultiline>
 			                	</control>
 		                	</control>
 		                	<control type="group"><!-- lower right of list-item -->
@@ -372,7 +383,7 @@ search()
 	            			<posy>0</posy>
 	            			<width>620</width>
 	            			<height>130</height>
-	            			<colordiffuse>FF88FFFF</colordiffuse>
+	            			<colordiffuse>D08888FF</colordiffuse>
 	            			<fadetime>200</fadetime>
 	            			<texture border="8">item_bg.png</texture>
 	            		</control>
@@ -392,17 +403,17 @@ search()
 			            	<control type="image">
 			            		<posx>0</posx>
 			            		<posy>5</posy>
-			            		<width>64</width>
-			            		<height>100</height>
+			            		<height>110</height>
+			            		<width>80</width>
 			            		<texture>$INFO[ListItem.Icon]</texture>
 			            		<aspectratio>keep</aspectratio>
 			            	</control>
 			            	<control type="group">
-				            	<posx>5</posx>
+				            	<posx>20</posx>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>8</posy>
-			                    	<width>450</width>
+			                    	<posy>0</posy>
+			                    	<width>505</width>
 			                    	<height>40</height>
 			                    	<font>font23b</font>
 			                    	<aligny>left</aligny>
@@ -412,7 +423,7 @@ search()
 			                	</control>
 			            		<control type="group"><!-- unfortunately progress is not very good atm. -->
 			            			<posx>69</posx>
-			            			<posy>34</posy>
+			            			<posy>26</posy>
 			            			<width>80</width>
 			            			<height>16</height>
 			            			<control type="image"><!-- disabled stars -->
@@ -425,10 +436,20 @@ search()
 			            				<height>16</height>
 			            				<texture>stars_$INFO[ListItem.property(custom:rating)].png</texture>
 			            			</control>
+				                	<control type="label">
+				                    	<posx>84</posx>
+				                    	<posy>1</posy>
+				                    	<width>200</width>
+				                    	<height>50</height>
+				                    	<font>font12b</font>
+				                    	<aligny>left</aligny>
+				                    	<info>ListItem.property(custom:details)</info>
+				                    	<textcolor>grey</textcolor>
+				                	</control>
 			            		</control>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>66</posy>
+			                    	<posy>42</posy>
 			                    	<width>450</width>
 			                    	<height>60</height>
 			                    	<font>font18</font>
@@ -439,14 +460,14 @@ search()
 			                	</control>
 			                	<control type="label">
 			                    	<posx>69</posx>
-			                    	<posy>88</posy>
-			                    	<width>450</width>
+			                    	<posy>65</posy>
+			                    	<width>370</width>
 			                    	<height>60</height>
-			                    	<font>font18</font>
+			                    	<font>font14</font>
 			                    	<aligny>left</aligny>
-			                    	<info>ListItem.property(custom:details)</info>
+			                    	<info>ListItem.property(custom:cast)</info>
 			                    	<textcolor>grey</textcolor>
-			                    	<scroll>true</scroll>
+			                    	<wrapmultiline>true</wrapmultiline>
 			                	</control>
 		                	</control>
 		                	<control type="group"><!-- lower right of list-item -->

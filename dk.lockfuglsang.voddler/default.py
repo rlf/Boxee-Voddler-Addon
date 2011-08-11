@@ -75,10 +75,13 @@ def search():
             item.SetStarRating(rating)
             item.SetProperty('rating', "%02i" % (math.floor(rating*20)/2))
 
+            castList = []
             for cast in movie[u'castMembers']:
                 role = cast[u'role'].encode('utf-8', 'xmlcharrefreplace')
                 name = cast[u'name'].encode('utf-8', 'xmlcharrefreplace')
                 item.AddCastAndRole(name, role)
+                castList.append(name)
+            item.SetProperty('cast', string.join(castList, ', '))
 
             for platform in movie[u'platforms']:
                 item.SetProperty('on_%s' % platform.encode('ascii'), 'true')
