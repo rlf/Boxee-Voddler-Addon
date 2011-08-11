@@ -1,0 +1,18 @@
+The Boxee-Voddler-Addon is being developed in an effort to get the Voddler service available from the Boxee Box.
+
+The main goal is to clarify what is needed to get such an addon to work, and then try to get both Voddler and Boxee Box to participate in a dialogue.
+
+BACKLOG
+=======
+* Make the UI controls actually work on Boxee (add navigation + visualization of focus)
+* Episodes (TVSeries)
+* Documentaries
+* VoddlerNet Playback
+* Pagination
+* Search on title?
+
+COMPLETED
+=========
+v0.1
+* Interface with voddler metaapi for movies
+* UI components (data + icons etc)
