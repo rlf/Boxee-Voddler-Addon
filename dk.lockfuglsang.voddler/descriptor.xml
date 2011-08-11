@@ -1,0 +1,17 @@
+<app>
+  <id>dk.lockfuglsang.voddler</id>
+  <name>Voddler</name>
+  <version>0.1</version>
+  <description>Voddler Addon for Boxee</description>
+  <thumb>http://www.lockfuglsang.dk/boxee/voddler.png</thumb>
+  <repositoryId>dk.lockfuglsang</repositoryId>
+  <repository>http://www.lockfuglsang.dk/boxee</repository>
+  <media>video</media>
+  <copyright>LGPL</copyright>
+  <email>rasmus@lockfuglsang.dk</email>
+  <type>skin</type>
+  <startWindow>default</startWindow>
+  <platform>all</platform>
+  <minversion>0.9.12</minversion>
+  <test-app>true</test-app>
+</app>
