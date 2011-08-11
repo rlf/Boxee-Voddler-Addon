@@ -511,5 +511,14 @@ selectMovie()
 	            </control><!-- movies -->
             </control>
         </control>
+        <control type="label">
+        	<posx>1230</posx>
+        	<posy>690</posy>
+        	<width>80</width>
+        	<height>20</height>
+        	<font>font14</font>
+        	<textcolor>40FFFFFF</textcolor>
+        	<label>v0.1</label>
+        </control>
     </controls>
 </window>
