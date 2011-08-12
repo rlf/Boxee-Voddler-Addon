@@ -6,7 +6,7 @@ BACKLOG
 =======
 Tasks
 -----
-D Boxee Box navigation of the current interface
+H Performance: don't use 100 ListItems - find another way
 * Pagination of movie-list
 
 Epics
@@ -26,6 +26,13 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.2
+D Boxee Box navigation of the current interface
+* Progress indication
+* Improved status messages
+* Support for login credentials (used on play-movie)
+* Support for two types of play-back (Flash and embedded)
+
 v0.1
 * Interface with voddler metaapi for movies (only first n movies are fetched)
 * Support simple filtering (category, payment-type, genre)

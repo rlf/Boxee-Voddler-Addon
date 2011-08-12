@@ -236,6 +236,9 @@ def status(msg, progress=0, max=0):
         image.SetVisible(False)
     label.SetVisible(True)
 
+def error(msg):
+    ShowDialogOk("Error", msg)
+
 def hideWaitDialog():
     window = GetWindow(WINDOW_ID)
     label = window.GetLabel(STATUS_ID)
@@ -300,7 +303,7 @@ def getSessionId():
         sessionId = data[u'data'][u'session'].encode('ascii')
     else:
         sessionId = None
-        status("Error authenticating: %s" % data[u'message'].encode('ascii'))
+        error("Error authenticating: %s" % data[u'message'].encode('ascii'))
     return sessionId
 
 def getTokenId():
@@ -312,7 +315,7 @@ def getTokenId():
         return data[u'data'][u'token'].encode('ascii')
     else:
         sessionId = None
-        status("Error retrieving token: %s" % data[u'message'].encode('ascii'))
+        error("Error retrieving token: %s" % data[u'message'].encode('ascii'))
     return None
 
 # Show the main window

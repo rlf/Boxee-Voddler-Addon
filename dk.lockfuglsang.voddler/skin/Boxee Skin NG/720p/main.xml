@@ -62,7 +62,7 @@ populateControls()
             		</control>
 		            <control type="list" id="201">
 		            	<ondown>202</ondown>
-	                	<onup>200</onup>
+	                	<onup>501</onup>
 		                <posx>110</posx>
 		                <posy>0</posy>
 		                <height>40</height>
@@ -229,20 +229,37 @@ search()
             	<posy>5</posy>
             	<width>180</width>
             	<height>80</height>
+        		<control type="image">
+        			<width>180</width>
+        			<height>40</height>
+        			<texture border="8">bg.png</texture>
+        			<colordiffuse>505050FF</colordiffuse>
+        			<visible>Control.HasFocus(501)</visible>
+        		</control>
             	<control type="edit" id="501">
+            		<ondown>502</ondown>
+            		<onup>201</onup>
             		<posx>0</posx>
             		<posy>0</posy>
             		<width>180</width>
             		<height>40</height>
             		<label>login</label>
             		<font>18</font>
-            		<texturefocus border="8">bg.png</texturefocus>
-            		<colordiffuse>505050FF</colordiffuse>
             		<ontextchange lang="python"><![CDATA[
 saveUserSettings()
 ]]></ontextchange>
             	</control>
+        		<control type="image">
+            		<posy>20</posy>
+        			<width>180</width>
+        			<height>40</height>
+        			<texture border="8">bg.png</texture>
+        			<colordiffuse>505050FF</colordiffuse>
+        			<visible>Control.HasFocus(502)</visible>
+        		</control>
             	<control type="edit" id="502">
+            		<ondown>200</ondown>
+            		<onup>501</onup>
             		<posx>0</posx>
             		<posy>20</posy>
             		<width>180</width>
