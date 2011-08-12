@@ -1,0 +1,32 @@
+The Boxee-Voddler-Addon is being developed in an effort to get the Voddler service available from the Boxee Box.
+
+The main goal is to clarify what is needed to get such an addon to work, and then try to get both Voddler and Boxee Box to participate in a dialogue.
+
+BACKLOG
+=======
+Tasks
+-----
+D Boxee Box navigation of the current interface
+* Pagination of movie-list
+
+Epics
+-----
+E Main page (Episode, Movies, Documentaries)
+ * Episodes (TVSeries) - different organisation (Title > Season > Episodes)
+ * Documentaries
+E VoddlerNet Playback
+E Search for movie (not currently supported in the metaapi)
+
+Legend
+------
+D - Defect
+H - High priority task
+E - Epic - a broader description of desired functionality
+* - Task
+
+COMPLETED
+=========
+v0.1
+* Interface with voddler metaapi for movies (only first n movies are fetched)
+* Support simple filtering (category, payment-type, genre)
+* Basic UI layout of movie-information
