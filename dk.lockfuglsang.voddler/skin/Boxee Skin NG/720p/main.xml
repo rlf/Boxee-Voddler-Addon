@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <!--
 Convention:
- id : 2xx, list ids
- id : 3xx, button ids
+ id : 	1xx, labels
+ 	  	2xx, lists
+ 		3xx, buttons
+ 		4xx, largeimages
+ 		5xx, edit-fields
+ 		6xx, images
 -->
 <window type="window" id="14000">
     <defaultcontrol always="true">201</defaultcontrol>
@@ -37,6 +41,7 @@ populateControls()
             	<control type="group"><!-- genre -->
             		<posx>0</posx>
             		<width>300</width>
+            		<height>40</height>
 		            <control type="label">
 		                <posx>0</posx>
 		                <posy>5</posy>
@@ -46,7 +51,18 @@ populateControls()
 		                <label>Genre:</label>
 		                <color>white</color>
 		            </control>
+            		<control type="image">
+            			<posx>100</posx>
+            			<posy>5</posy>
+            			<width>195</width>
+            			<height>35</height>
+            			<texture border="8">bg.png</texture>
+            			<colordiffuse>505050FF</colordiffuse>
+            			<visible>Control.HasFocus(201)</visible>
+            		</control>
 		            <control type="list" id="201">
+		            	<ondown>202</ondown>
+	                	<onup>200</onup>
 		                <posx>110</posx>
 		                <posy>0</posy>
 		                <height>40</height>
@@ -78,8 +94,8 @@ populateControls()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-	selectGenre()
-	]]></onclick>
+search()
+]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
 	            </control><!-- genre -->
@@ -96,7 +112,18 @@ populateControls()
 		                <label>Sorting:</label>
 		                <color>white</color>
 		            </control>
+            		<control type="image">
+            			<posx>100</posx>
+            			<posy>5</posy>
+            			<width>195</width>
+            			<height>35</height>
+            			<texture border="8">bg.png</texture>
+            			<colordiffuse>505050FF</colordiffuse>
+            			<visible>Control.HasFocus(202)</visible>
+            		</control>
 		            <control type="list" id="202">
+		            	<ondown>203</ondown>
+	                	<onup>201</onup>
 		                <posx>110</posx>
 		                <posy>0</posy>
 		                <height>40</height>
@@ -128,7 +155,7 @@ populateControls()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-selectSorting()
+search()
 ]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
@@ -146,7 +173,18 @@ selectSorting()
 		                <label>Type:</label>
 		                <color>white</color>
 		            </control>
+            		<control type="image">
+            			<posx>100</posx>
+            			<posy>5</posy>
+            			<width>195</width>
+            			<height>35</height>
+            			<texture border="8">bg.png</texture>
+            			<colordiffuse>505050FF</colordiffuse>
+            			<visible>Control.HasFocus(203)</visible>
+            		</control>
 		            <control type="list" id="203">
+		            	<ondown>200</ondown>
+	                	<onup>202</onup>
 		                <posx>110</posx>
 		                <posy>0</posy>
 		                <height>40</height>
@@ -178,28 +216,49 @@ selectSorting()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-	selectSorting()
-	]]></onclick>
+search()
+]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
 	            </control><!-- category -->
-	            <control type="button" id="301">
-	            	<posx>595</posx>
-	            	<posy>60</posy>
-	            	<width>32</width>
-	            	<height>32</height>
-	            	<label>-</label>
-	            	<align>center</align>
-	            	<focusedcolor>ffffffff</focusedcolor>
-	            	<textcolor>ffbdbdbd</textcolor>
-	            	<texturenofocus>search_btn.png</texturenofocus>
-	            	<texturefocus>search_btn_hover.png</texturefocus>
-	            	<onclick lang="python"><![CDATA[
-search()
-]]>
-</onclick>
-	            </control>
             </control><!-- filter -->
+
+
+            <control type="group"><!-- login creds -->
+            	<posx>1100</posx>
+            	<posy>5</posy>
+            	<width>180</width>
+            	<height>80</height>
+            	<control type="edit" id="501">
+            		<posx>0</posx>
+            		<posy>0</posy>
+            		<width>180</width>
+            		<height>40</height>
+            		<label>login</label>
+            		<font>18</font>
+            		<texturefocus border="8">bg.png</texturefocus>
+            		<colordiffuse>505050FF</colordiffuse>
+            		<ontextchange lang="python"><![CDATA[
+saveUserSettings()
+]]></ontextchange>
+            	</control>
+            	<control type="edit" id="502">
+            		<posx>0</posx>
+            		<posy>20</posy>
+            		<width>180</width>
+            		<height>40</height>
+            		<label>password</label>
+            		<password>true</password>
+            		<font>18</font>
+            		<texturefocus border="8">bg.png</texturefocus>
+            		<colordiffuse>505050FF</colordiffuse>
+            		<ontextchange lang="python"><![CDATA[
+saveUserSettings()
+]]></ontextchange>
+            	</control>
+            </control>
+
+
             <control type="group"><!-- movie list + details -->
                 <posx>10</posx>
                 <posy>100</posy>
@@ -247,6 +306,8 @@ search()
 	            	</control>
             	</control>
 	            <control type="list" id="200"><!-- movies -->
+					<ondown>201</ondown>
+	                <onup>203</onup>
 	                <posx>10</posx>
 	                <posy>10</posy>
 	                <width>620</width>
@@ -281,7 +342,7 @@ search()
 			            		<posy>5</posy>
 			            		<height>110</height>
 			            		<width>80</width>
-			            		<info>ListItem.Icon</info>
+			            		<info>ListItem.Thumb</info>
 			            		<aspectratio>keep</aspectratio>
 			            	</control>
 			            	<control type="group">
@@ -383,9 +444,9 @@ search()
 	            			<posy>0</posy>
 	            			<width>620</width>
 	            			<height>130</height>
-	            			<colordiffuse>D08888FF</colordiffuse>
+	            			<colordiffuse>D0101060</colordiffuse>
 	            			<fadetime>200</fadetime>
-	            			<texture border="8">item_bg.png</texture>
+	            			<texture border="8">bg.png</texture>
 	            		</control>
 	            		<control type="label">
 	            			<posy>2</posy>
@@ -405,7 +466,7 @@ search()
 			            		<posy>5</posy>
 			            		<height>110</height>
 			            		<width>80</width>
-			            		<texture>$INFO[ListItem.Icon]</texture>
+			            		<texture>$INFO[ListItem.Thumb]</texture>
 			            		<aspectratio>keep</aspectratio>
 			            	</control>
 			            	<control type="group">
@@ -511,6 +572,49 @@ selectMovie()
 	            </control><!-- movies -->
             </control>
         </control>
+
+        <control type="group"><!-- status -->
+        	<!-- 1280/2=640, 720/2=360 -->
+        	<posx>430</posx>
+        	<posy>20</posy>
+        	<width>420</width>
+        	<height>80</height>
+			<visible>Control.IsVisible(100)</visible>
+        	<control type="image">
+        		<width>420</width>
+        		<height>80</height>
+        		<texture border="8">bg.png</texture>
+        		<colordiffuse>40206020</colordiffuse>
+        	</control>
+        	<control type="label" id="100"><!-- STATUS -->
+        		<posx>10</posx>
+        		<posy>5</posy>
+        		<width>400</width>
+        		<height>70</height>
+        		<font>font24b</font>
+        		<textcolor>FFC0C0FF</textcolor>
+        		<label></label>
+        		<wrapmultiline>true</wrapmultiline>
+        		<visible>false</visible>
+        		<align>center</align>
+        	</control>
+        	<control type="image">
+        		<posx>130</posx>
+        		<posy>45</posy>
+        		<width>160</width>
+        		<height>32</height>
+        		<texture>stars_empty.png</texture>
+        		<visible>Control.IsVisible(600)</visible>
+        	</control>
+        	<control type="image" id="600">
+        		<posx>130</posx>
+        		<posy>45</posy>
+        		<width>160</width>
+        		<height>32</height>
+        		<texture>stars_00.png</texture>
+        		<visible>false</visible>
+        	</control>
+        </control>
         <control type="label">
         	<posx>1230</posx>
         	<posy>690</posy>
@@ -518,7 +622,7 @@ selectMovie()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.1</label>
+        	<label>v0.2</label>
         </control>
     </controls>
 </window>

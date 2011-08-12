@@ -8,28 +8,42 @@ try: import json
 except: import simplejson as json
 from pprint import pprint
 
-baseURL = "http://api.voddler.com/metaapi/"
-
+WINDOW_ID=14000
+STATUS_ID=100
+PROGRESS_ID=600
+BASE_URL = "http://api.voddler.com/metaapi/"
+LOGIN_URL = "https://api.voddler.com/userapi/login/1?username=%s&password=%s"
+TOKEN_URL = "https://api.voddler.com/userapi/vnettoken/1?session=%s"
+PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
+PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
+PLAYER=1
+PAGE_SIZE=100
+sessionId = "5aba3b1cf4f03e0cba8971d3fd695fbd"
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
-def selectGenre():
-    print "selectGenre"
-
-def selectSorting():
-    print "selectSorting"
-
 def selectMovie():
     movieList = GetActiveWindow().GetList(200)
     index = movieList.GetFocusedItem()
     movie = movieList.GetItem(index)
-    GetPlayer().PlayWithActionMenu(movie)
-
-def loadFanArt():
-    print "loading fan art"
+    # change Path to point to the relevant movieUrl
+    ShowDialogWait()
+    status("Playing movie %s" % movie.GetLabel())
+    try:
+        url = getMovieURL(movie.GetProperty('id'))
+        if url:
+            print "- url %s" % url
+            movie.SetPath(url)
+            hideWaitDialog()
+            GetPlayer().PlayWithActionMenu(movie)
+        else:
+            print "error playing movie"
+    finally:
+        hideWaitDialog()
 
 def search():
     ShowDialogWait()
+    saveUserSettings()
     try:
         movies = GetActiveWindow().GetList(200)
         items = ListItems()
@@ -38,11 +52,14 @@ def search():
         g = getGenre()
         s = getSorting()
         c = getCategory()
-        jsonData = getURL(baseURL + "browse/1?type=movie&category=" + c + "&genre=" + g + "&sort=" + s + "&offset=0&count=100");
+        status("Fetching movies...")
+        jsonData = getURL(BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=0&count=%s" % (c, g, s, PAGE_SIZE));
         data = json.loads(jsonData)
         items = ListItems()
+        max_cnt = min(int(data[u'data'][u'count']), PAGE_SIZE)
         item_cnt = 1
         for movie in data[u'data'][u'videos']:
+            status("Parsing movies %i of %i" % (item_cnt, max_cnt), item_cnt, max_cnt)
             title = movie[u'originalTitle'].encode('utf-8', 'xmlcharrefreplace')
             description = movie[u'localizedData'][u'synopsis'].encode('utf-8', 'xmlcharrefreplace')
             iconUrl = movie[u'posterUrl'].encode('ascii', 'xmlcharrefreplace')
@@ -65,10 +82,12 @@ def search():
             item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
             item.SetDuration(duration)
             item.SetLabel(title)
+            item.SetProperty('id', movie[u'id'].encode('ascii'))
             item.SetProperty('genres', getGenres(movie[u'genres']))
             item.SetProperty("details", "%s | %s" % (releaseYear, durationFormatted))
             item.SetDescription(description, True)
-            #item.SetThumbnail(iconUrl)
+            item.SetThumbnail(iconUrl)
+            item.SetIcon(iconUrl)
             item.SetProperty('poster', iconUrl)
             item.SetPath(movieUrl)
             item.SetContentType('text/html')
@@ -105,18 +124,17 @@ def search():
                 cnt += 1
             item.SetProperty('ix', '%i' % item_cnt)
 
-            item.Dump()
             items.append(item)
             item_cnt += 1
         movies = GetActiveWindow().GetList(200)
         movies.SetItems(items)
     finally:
-        HideDialogWait()
+        hideWaitDialog()
 # -----------------------------------------------------------------------------
 # Populate Controls
 # -----------------------------------------------------------------------------
 def populateGenre():
-    jsonData = getURL(baseURL + "genres/1?type=movies")
+    jsonData = getURL(BASE_URL + "genres/1?type=movies")
     data = json.loads(jsonData)
     #pprint(data)
     items = mc.ListItems()
@@ -158,18 +176,83 @@ def populateControls():
     # Initialize UI
     ShowDialogWait()
     try:
-        genre = GetWindow(14000).GetList(201)
-        sorting = GetWindow(14000).GetList(202)
-        category = GetWindow(14000).GetList(203)
+        genre = GetWindow(WINDOW_ID).GetList(201)
+        sorting = GetWindow(WINDOW_ID).GetList(202)
+        category = GetWindow(WINDOW_ID).GetList(203)
         populateSorting()
         populateCategory()
         populateGenre()
+        restoreUserSettings()
     finally:
-        HideDialogWait()
+        hideWaitDialog()
+
+# -----------------------------------------------------------------------------
+# User Settings
+# -----------------------------------------------------------------------------
+editFields = {'username' : 501, 'password' : 502}
+listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
+def restoreUserSettings():
+    print "restoring user-settings"
+    window = GetWindow(WINDOW_ID)
+    config = GetApp().GetLocalConfig()
+    for key, id in editFields.items():
+        value = config.GetValue(key)
+        if not value is None:
+            window.GetEdit(id).SetText(value)
+    for key, id in listFields.items():
+        value = config.GetValue(key)
+        if not value is None:
+            window.GetList(id).SetFocusedItem(int(value))
+
+def saveUserSettings():
+    print "saving user-settings"
+    window = GetWindow(WINDOW_ID)
+    config = GetApp().GetLocalConfig()
+    for key, id in editFields.items():
+        value = window.GetEdit(id).GetText()
+        if value:
+            config.SetValue(key, value)
+    for key, id in listFields.items():
+        value = window.GetList(id).GetFocusedItem()
+        if not value is None:
+            config.SetValue(key, "%i" % value)
 
 # -----------------------------------------------------------------------------
 # Helper / Library Methods
 # -----------------------------------------------------------------------------
+def status(msg, progress=0, max=0):
+    window = GetWindow(WINDOW_ID)
+    label = window.GetLabel(STATUS_ID)
+    image = window.GetImage(PROGRESS_ID)
+    print(msg)
+    label.SetLabel(msg)
+    if max:
+        ratio = math.ceil(progress*10/max)/2 # number between 0-5 with increments of .5
+        texture = 'stars_%02i.png' % (ratio * 10)
+        print "Texture: %s, %f" % (texture, ratio)
+        image.SetTexture(texture)
+        image.SetVisible(True)
+    else:
+        image.SetVisible(False)
+    label.SetVisible(True)
+
+def hideWaitDialog():
+    window = GetWindow(WINDOW_ID)
+    label = window.GetLabel(STATUS_ID)
+    label.SetVisible(False)
+    mc.HideDialogWait()
+
+def getMovieURL(id):
+    if PLAYER==1:
+        sId = getSessionId()
+        if sId:
+            return PLAYER1_URL % (sId, id)
+    elif PLAYER==2:
+        token = getTokenId()
+        if token:
+            return PLAYER2_URL % (token, id)
+    return None
+
 def getGenres(genres):
     global genreCache
     if not genreCache:
@@ -203,6 +286,36 @@ def getURL(url):
     print url + ":\n" + data
     return data
 
+def getSessionId():
+    global sessionId
+    if sessionId:
+        return sessionId
+    username = GetEdit(501).GetText()
+    password = GetEdit(502).GetText()
+    status("Logging in as %s" % username)
+    jsonData = getURL(LOGIN_URL % (username, password))
+    data = json.loads(jsonData)
+    pprint(data)
+    if data[u'success']:
+        sessionId = data[u'data'][u'session'].encode('ascii')
+    else:
+        sessionId = None
+        status("Error authenticating: %s" % data[u'message'].encode('ascii'))
+    return sessionId
+
+def getTokenId():
+    status("Retrieving token");
+    jsonData = getURL(TOKEN_URL % getSessionId())
+    data = json.loads(jsonData)
+    pprint(data)
+    if data[u'success']:
+        return data[u'data'][u'token'].encode('ascii')
+    else:
+        sessionId = None
+        status("Error retrieving token: %s" % data[u'message'].encode('ascii'))
+    return None
 
 # Show the main window
 mc.ActivateWindow(14000)
+# restore default values
+restoreUserSettings()
