@@ -1,5 +1,8 @@
 # Main .py file
-
+# TODOs
+# * Localization - all strings in something else :D
+# * Add to voddler playlist + favourite
+# * Play trailer
 import string, math
 import mc
 from mc import *
@@ -11,20 +14,30 @@ try: import json
 except: import simplejson as json
 from pprint import pprint
 
+# IDs
 WINDOW_ID=14000
 STATUS_ID=100
 PROGRESS_ID=600
+USERNAME_ID=501
+PASSWORD_ID=502
+USERNAME_LBL_ID=102
+
+# URLs
 BASE_URL = "http://api.voddler.com/metaapi/"
 LOGIN_URL = "https://api.voddler.com/userapi/login/1?username=%s&password=%s"
 SEARCH_URL = BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=%i&count=%s"
 TOKEN_URL = "https://api.voddler.com/userapi/vnettoken/1?session=%s"
 PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
 PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
+
+# Constants
 PLAYER=1
 PAGE_SIZE=50
 PLATFORMS = ['iphone', 'web', 'android', 'symbian']
 TIME_BETWEEN_SEARCHES = 3 # at least 3 seconds between searches - makes sure that we don't accidentially skip pages
-sessionId = "5aba3b1cf4f03e0cba8971d3fd695fbd"
+
+# Global vars
+sessionId = None
 genre = None
 pageCache = {}
 currentMovieIndex = 1
@@ -33,6 +46,7 @@ lastPage = 0
 maxPage = 0
 maxCount = 0
 lastSearch = 0
+autoLogin = True
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
@@ -96,7 +110,7 @@ def search(reset=False):
             statusLabel.SetLabel("no movies found")
             mainList.SetVisible(False)
         else:
-            statusLabel.SetLabel("showing %i-%i of %i movies" % (offset+1, offset+len(items), maxCount))
+            statusLabel.SetLabel("showing %i-%i of %i" % (offset+1, offset+len(items), maxCount))
             mainList.SetVisible(True)
         statusLabel.SetVisible(True)
         window.GetLabel(110).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
@@ -142,7 +156,6 @@ def prevPage():
 
 def showMovieOnListItem(item, movie, index):
     title = movie[u'originalTitle'].encode('utf-8', 'xmlcharrefreplace')
-    print "Showing %s" % title
     description = movie[u'localizedData'][u'synopsis'].encode('utf-8', 'xmlcharrefreplace')
     iconUrl = movie[u'posterUrl'].encode('ascii', 'xmlcharrefreplace')
     screenShots = movie[u'screenshots']
@@ -232,12 +245,14 @@ def populateSorting():
             item = ListItem(ListItem.MEDIA_UNKNOWN)
             item.SetLabel(g['name'])
             item.SetProperty('value', g['value'])
+            item.SetIcon("sort_%s_on.png" % g['value'])
+            item.SetThumbnail("sort_%s.png" % g['value'])
             items.append(item)
     sorting.SetItems(items)
 
 def populateCategory():
     items = mc.ListItems()
-    data = [{'name' : 'Free', 'value' : 'free'}, {'name' : 'Premium', 'value' : 'premium'}, {'name' : 'All', 'value' : 'all'}]
+    data = [{'name' : 'All', 'value' : 'all'}, {'name' : 'Rent', 'value' : 'premium'}, {'name' : 'Free', 'value' : 'free'}]
     for g in data:
         if g['name']:
             item = ListItem(ListItem.MEDIA_UNKNOWN)
@@ -271,41 +286,47 @@ def populateControls():
         populateGenre()
         populateLists()
         restoreUserSettings()
-        search(True)
+        tryLogin()
     finally:
         hideWaitDialog()
+    print "RUNNING from populateControls"
 
 # -----------------------------------------------------------------------------
 # User Settings
 # -----------------------------------------------------------------------------
-editFields = {'username' : 501, 'password' : 502}
+editFields = {'username' : USERNAME_ID, 'password' : PASSWORD_ID}
 listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
 def restoreUserSettings():
+    global autoLogin
     print "restoring user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
+
     for key, id in editFields.items():
         value = config.GetValue(key)
         if not value is None:
             window.GetEdit(id).SetText(value)
+
     for key, id in listFields.items():
         value = config.GetValue(key)
-        if not value is None:
+        print "restoring %s as %s" % (key, value)
+        if value or value == 0:
             window.GetList(id).SetFocusedItem(int(value))
         window.GetList(id).SetVisible(True)
+    autoLogin = (config.GetValue('autoLogin') == 'True')
 
 def saveUserSettings():
+    global autoLogin
     print "saving user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
     for key, id in editFields.items():
         value = window.GetEdit(id).GetText()
-        if value:
-            config.SetValue(key, value)
+        config.SetValue(key, value)
     for key, id in listFields.items():
         value = window.GetList(id).GetFocusedItem()
-        if not value is None:
-            config.SetValue(key, "%i" % value)
+        config.SetValue(key, "%i" % value)
+    config.SetValue('autoLogin', "%s" % autoLogin)
 
 # -----------------------------------------------------------------------------
 # Helper / Library Methods
@@ -372,27 +393,75 @@ def getCategory():
     global category
     return _getListItemValue(category)
 
-def getURL(url):
-    f = urllib2.urlopen(url)
+def getURL(url, postData=None):
+    f = urllib2.urlopen(url, postData)
     data = f.read()
     print url + ":\n" + data
     return data
 
+def logout():
+    global sessionId, autoLogin
+    sessionId = None
+    autoLogin = False
+    GetWindow(WINDOW_ID).GetEdit(PASSWORD_ID).SetText("") # clear password as well
+    saveUserSettings()
+    CloseWindow()
+
+def tryLogin():
+    global autoLogin
+    if autoLogin:
+        doLogin()
+    else:
+        showLogin()
+
+def showLogin():
+    window = GetWindow(WINDOW_ID)
+    loginCtrl = window.GetControl(999)
+    loginCtrl.SetVisible(True)
+    window.GetEdit(USERNAME_ID).SetFocus()
+
+def doLogin():
+    global autoLogin
+    window = GetWindow(WINDOW_ID)
+    loginCtrl = window.GetControl(999)
+    logoutCtrl = window.GetButton(503)
+    loginCtrl.SetVisible(False)
+    logoutCtrl.SetVisible(False)
+    if not checkLogIn():
+        showLogin()
+    else:
+        logoutCtrl.SetVisible(True)
+        loginCtrl.SetVisible(False)
+        # execute the search
+        autoLogin = True
+        saveUserSettings()
+        search(True)
+
+def checkLogIn():
+    return getSessionId() != None
+
 def getSessionId():
     global sessionId
+    window = GetWindow(WINDOW_ID)
     if sessionId:
         return sessionId
-    username = GetEdit(501).GetText()
-    password = GetEdit(502).GetText()
+    username = window.GetEdit(USERNAME_ID).GetText()
+    password = window.GetEdit(PASSWORD_ID).GetText()
     status("Logging in as %s" % username)
-    jsonData = getURL(LOGIN_URL % (username, password))
-    data = json.loads(jsonData)
-    pprint(data)
-    if data[u'success']:
-        sessionId = data[u'data'][u'session'].encode('ascii')
-    else:
+    try:
+        jsonData = getURL(LOGIN_URL, urllib.urlencode({'username' : username, 'password' : password}))
+        data = json.loads(jsonData)
+        pprint(data)
+        if data[u'success']:
+            sessionId = data[u'data'][u'session'].encode('ascii')
+        else:
+            sessionId = None
+            error("Error authenticating %s[CR][CR]%s" % (username, data[u'message']))
+    except urllib2.HTTPError, e:
         sessionId = None
-        error("Error authenticating: %s" % data[u'message'].encode('ascii'))
+        error("Error authenticating %s[CR][CR]%s" % (username, e))
+    if sessionId:
+        window.GetLabel(USERNAME_LBL_ID).SetLabel("%s" % username)
     return sessionId
 
 def getTokenId():
@@ -407,7 +476,9 @@ def getTokenId():
         error("Error retrieving token: %s" % data[u'message'].encode('ascii'))
     return None
 
+def loadPage():
+    populateControls()
+    restoreUserSettings()
+
 # Show the main window
 mc.ActivateWindow(WINDOW_ID)
-# restore default values
-restoreUserSettings()

@@ -6,7 +6,6 @@ BACKLOG
 =======
 Tasks
 -----
-* Better login-support (status of login)
 * Playback of trailers
 * Add to voddler-list
 
@@ -27,6 +26,10 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.5
+* Better login-support (status of login)
+* Brush-up of filter-gui (navigation is a bit odd)
+
 v0.4
 H Performance: don't use 100 ListItems - find another way
   SOLVED: lazy pagination seems to solve it
