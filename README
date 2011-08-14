@@ -6,8 +6,9 @@ BACKLOG
 =======
 Tasks
 -----
-H Performance: don't use 100 ListItems - find another way
-* Pagination of movie-list
+* Better login-support (status of login)
+* Playback of trailers
+* Add to voddler-list
 
 Epics
 -----
@@ -26,6 +27,12 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.4
+H Performance: don't use 100 ListItems - find another way
+  SOLVED: lazy pagination seems to solve it
+* Pagination of movie-list
+  SOLVED: lazy pagination + caching of pages
+
 v0.2
 D Boxee Box navigation of the current interface
 * Progress indication

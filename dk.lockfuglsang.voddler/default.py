@@ -3,7 +3,10 @@
 import string, math
 import mc
 from mc import *
+import urllib
 import urllib2
+import time
+
 try: import json
 except: import simplejson as json
 from pprint import pprint
@@ -13,17 +16,28 @@ STATUS_ID=100
 PROGRESS_ID=600
 BASE_URL = "http://api.voddler.com/metaapi/"
 LOGIN_URL = "https://api.voddler.com/userapi/login/1?username=%s&password=%s"
+SEARCH_URL = BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=%i&count=%s"
 TOKEN_URL = "https://api.voddler.com/userapi/vnettoken/1?session=%s"
 PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
 PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
 PLAYER=1
-PAGE_SIZE=100
+PAGE_SIZE=50
+PLATFORMS = ['iphone', 'web', 'android', 'symbian']
+TIME_BETWEEN_SEARCHES = 3 # at least 3 seconds between searches - makes sure that we don't accidentially skip pages
 sessionId = "5aba3b1cf4f03e0cba8971d3fd695fbd"
+genre = None
+pageCache = {}
+currentMovieIndex = 1
+currentPage = 0
+lastPage = 0
+maxPage = 0
+maxCount = 0
+lastSearch = 0
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
-def selectMovie():
-    movieList = GetActiveWindow().GetList(200)
+def selectMovie(listId=200):
+    movieList = GetActiveWindow().GetList(listId)
     index = movieList.GetFocusedItem()
     movie = movieList.GetItem(index)
     # change Path to point to the relevant movieUrl
@@ -41,95 +55,156 @@ def selectMovie():
     finally:
         hideWaitDialog()
 
-def search():
+def search(reset=False):
+    global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch
     ShowDialogWait()
     saveUserSettings()
+    window = GetWindow(WINDOW_ID)
+    mainList = window.GetList(200)
+    statusLabel = window.GetLabel(120)
+    statusLabel.SetVisible(False)
+    if reset:
+        currentPage = 0
+        pageCache = {}
+        lastPage = 0
     try:
-        movies = GetActiveWindow().GetList(200)
+        g = urllib.quote(getGenre())
+        s = urllib.quote(getSorting())
+        c = urllib.quote(getCategory())
+        offset = currentPage * PAGE_SIZE
         items = ListItems()
-        movies.SetItems(items)
+        if currentPage in pageCache.keys():
+            items = pageCache[currentPage]
+        else:
+            status("Fetching page %i" % (currentPage+1))
+            jsonData = getURL(SEARCH_URL % (c, g, s, offset, PAGE_SIZE));
+            data = json.loads(jsonData)
+            maxCount = int(data[u'data'][u'count'])
+            maxPage = (maxCount-1) / PAGE_SIZE
+            if maxPage < 0:
+                maxPage = 0
+            itemsOnCurrentPage = min(PAGE_SIZE, maxCount, maxCount - (currentPage*PAGE_SIZE))
+            for index, movie in enumerate(data[u'data'][u'videos']):
+                status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+                item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+                showMovieOnListItem(item, movie, index + offset)
+                items.append(item)
+            pageCache[currentPage] = items
 
-        g = getGenre()
-        s = getSorting()
-        c = getCategory()
-        status("Fetching movies...")
-        jsonData = getURL(BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=0&count=%s" % (c, g, s, PAGE_SIZE));
-        data = json.loads(jsonData)
-        items = ListItems()
-        max_cnt = min(int(data[u'data'][u'count']), PAGE_SIZE)
-        item_cnt = 1
-        for movie in data[u'data'][u'videos']:
-            status("Parsing movies %i of %i" % (item_cnt, max_cnt), item_cnt, max_cnt)
-            title = movie[u'originalTitle'].encode('utf-8', 'xmlcharrefreplace')
-            description = movie[u'localizedData'][u'synopsis'].encode('utf-8', 'xmlcharrefreplace')
-            iconUrl = movie[u'posterUrl'].encode('ascii', 'xmlcharrefreplace')
-            screenShots = movie[u'screenshots']
-            movieUrl = movie[u'url'].encode('ascii', 'error')
-            duration = movie[u'runtime'] * 60
-            durationHour = movie[u'runtime'] / 60
-            durationMinute = movie[u'runtime'] % 60
-            durationFormatted = "%ih %imin" % (durationHour, durationMinute)
-            if durationHour == 0:
-                durationFormatted = "%imin" % durationMinute
-
-            rating = movie[u'videoRatingAverage']
-            releaseYear = movie[u'productionYear']
-            if not releaseYear:
-                releaseYear = '-'
-
-            print "==============================================================="
-            pprint(movie)
-            item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
-            item.SetDuration(duration)
-            item.SetLabel(title)
-            item.SetProperty('id', movie[u'id'].encode('ascii'))
-            item.SetProperty('genres', getGenres(movie[u'genres']))
-            item.SetProperty("details", "%s | %s" % (releaseYear, durationFormatted))
-            item.SetDescription(description, True)
-            item.SetThumbnail(iconUrl)
-            item.SetIcon(iconUrl)
-            item.SetProperty('poster', iconUrl)
-            item.SetPath(movieUrl)
-            item.SetContentType('text/html')
-            item.SetStarRating(rating)
-            item.SetProperty('rating', "%02i" % (math.floor(rating*20)/2))
-
-            castList = []
-            for cast in movie[u'castMembers']:
-                role = cast[u'role'].encode('utf-8', 'xmlcharrefreplace')
-                name = cast[u'name'].encode('utf-8', 'xmlcharrefreplace')
-                item.AddCastAndRole(name, role)
-                castList.append(name)
-            item.SetProperty('cast', string.join(castList, ', '))
-
-            for platform in movie[u'platforms']:
-                item.SetProperty('on_%s' % platform.encode('ascii'), 'true')
-
-            if movie[u'trailer']:
-                url = movie[u'trailer'].encode('ascii')
-                item.AddAlternativePath('Trailer', url, 'video/mp4', iconUrl)
-                item.SetPath(url)
-                item.SetContentType('video/mp4')
-                item.SetProperty('hasTrailer', 'true')
-            if movie[u'trailerLowRes']:
-                item.AddAlternativePath('Trailer LowRes', movie[u'trailerLowRes'].encode('ascii'), 'video/mp4', iconUrl)
-                item.SetProperty('hasTrailer', 'true')
-            cnt = 0
-            for shot in screenShots:
-                url = shot[u'url'].encode('ascii')
-                item.SetImage(cnt, url)
-                item.SetProperty('image%i' % cnt, url)
-                if cnt == 0:
-                    item.SetIcon(url)
-                cnt += 1
-            item.SetProperty('ix', '%i' % item_cnt)
-
-            items.append(item)
-            item_cnt += 1
-        movies = GetActiveWindow().GetList(200)
-        movies.SetItems(items)
+        mainList.SetItems(items)
+        if len(items) == 0:
+            statusLabel.SetLabel("no movies found")
+            mainList.SetVisible(False)
+        else:
+            statusLabel.SetLabel("showing %i-%i of %i movies" % (offset+1, offset+len(items), maxCount))
+            mainList.SetVisible(True)
+        statusLabel.SetVisible(True)
+        window.GetLabel(110).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
     finally:
         hideWaitDialog()
+        if mainList.IsVisible():
+            mainList.SetFocus()
+        lastPage = currentPage
+        print "search complete"
+        lastSearch = time.time()
+
+''' Makes sure that we don't accidentially spawn multiple searches due to
+    erradic navigation.
+'''
+def isSearchAllowed():
+    global lastSearch
+    return time.time() - lastSearch > TIME_BETWEEN_SEARCHES
+
+def nextPage():
+    global currentPage, maxPage
+    if not isSearchAllowed():
+        return
+    if currentPage < maxPage:
+        currentPage += 1
+        search()
+    else:
+        currentPage = 0
+        search()
+    GetWindow(WINDOW_ID).GetList(200).SetFocusedItem(0)
+
+def prevPage():
+    global currentPage, maxPage
+    if not isSearchAllowed():
+        return
+    if currentPage > 0:
+        currentPage -= 1
+        search()
+    else:
+        currentPage = maxPage
+        search()
+    list = GetWindow(WINDOW_ID).GetList(200)
+    list.SetFocusedItem(len(list.GetItems())-1)
+
+def showMovieOnListItem(item, movie, index):
+    title = movie[u'originalTitle'].encode('utf-8', 'xmlcharrefreplace')
+    print "Showing %s" % title
+    description = movie[u'localizedData'][u'synopsis'].encode('utf-8', 'xmlcharrefreplace')
+    iconUrl = movie[u'posterUrl'].encode('ascii', 'xmlcharrefreplace')
+    screenShots = movie[u'screenshots']
+    movieUrl = movie[u'url'].encode('ascii', 'error')
+    duration = movie[u'runtime'] * 60
+    durationHour = movie[u'runtime'] / 60
+    durationMinute = movie[u'runtime'] % 60
+    durationFormatted = "%ih %imin" % (durationHour, durationMinute)
+    if durationHour == 0:
+        durationFormatted = "%imin" % durationMinute
+
+    rating = movie[u'videoRatingAverage']
+    releaseYear = movie[u'productionYear']
+    if not releaseYear:
+        releaseYear = '-'
+
+    item.SetDuration(duration)
+    item.SetLabel(title)
+    item.SetProperty('id', movie[u'id'].encode('ascii'))
+    item.SetProperty('genres', getGenres(movie[u'genres']))
+    item.SetProperty("details", "%s | %s" % (releaseYear, durationFormatted))
+    item.SetDescription(description, True)
+    item.SetThumbnail(iconUrl)
+    item.SetIcon(iconUrl)
+    item.SetProperty('poster', iconUrl)
+    item.SetPath(movieUrl)
+    item.SetContentType('text/html')
+    item.SetStarRating(rating)
+    item.SetProperty('rating', "%02i" % (math.floor(rating * 20) / 2))
+    castList = []
+    for cast in movie[u'castMembers']:
+        role = cast[u'role'].encode('utf-8', 'xmlcharrefreplace')
+        name = cast[u'name'].encode('utf-8', 'xmlcharrefreplace')
+        item.AddCastAndRole(name, role)
+        castList.append(name)
+
+    item.SetProperty('cast', string.join(castList, ', '))
+    for platform in PLATFORMS:
+        item.SetProperty('on_%s' % platform, 'false')
+    for platform in movie[u'platforms']:
+        item.SetProperty('on_%s' % platform.encode('ascii'), 'true')
+
+    if movie[u'trailer']:
+        url = movie[u'trailer'].encode('ascii')
+        item.AddAlternativePath('Trailer', url, 'video/mp4', iconUrl)
+        item.SetPath(url)
+        item.SetContentType('video/mp4')
+        item.SetProperty('hasTrailer', 'true')
+
+    if movie[u'trailerLowRes']:
+        item.AddAlternativePath('Trailer LowRes', movie[u'trailerLowRes'].encode('ascii'), 'video/mp4', iconUrl)
+        item.SetProperty('hasTrailer', 'true')
+
+    cnt = 0
+    for shot in screenShots:
+        url = shot[u'url'].encode('ascii')
+        item.SetImage(cnt, url)
+        item.SetProperty('image%i' % cnt, url)
+        cnt += 1
+
+    item.SetProperty('ix', "%i" % (index+1))
+
 # -----------------------------------------------------------------------------
 # Populate Controls
 # -----------------------------------------------------------------------------
@@ -138,7 +213,7 @@ def populateGenre():
     data = json.loads(jsonData)
     #pprint(data)
     items = mc.ListItems()
-    global genreCache
+    global genreCache, genre
     genreCache = {}
     for g in data[u'data']:
         #pprint(g)
@@ -171,6 +246,16 @@ def populateCategory():
             items.append(item)
     category.SetItems(items)
 
+def populateLists():
+    window = GetWindow(WINDOW_ID)
+    for listId in [200]:
+        list = window.GetList(listId)
+        items = ListItems()
+        item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+        items.append(item)
+        list.SetItems(items)
+        list.SetVisible(False)
+
 def populateControls():
     global genre, sorting, category
     # Initialize UI
@@ -179,10 +264,14 @@ def populateControls():
         genre = GetWindow(WINDOW_ID).GetList(201)
         sorting = GetWindow(WINDOW_ID).GetList(202)
         category = GetWindow(WINDOW_ID).GetList(203)
+        for list in [genre, sorting, category]:
+            list.SetVisible(False)
         populateSorting()
         populateCategory()
         populateGenre()
+        populateLists()
         restoreUserSettings()
+        search(True)
     finally:
         hideWaitDialog()
 
@@ -203,6 +292,7 @@ def restoreUserSettings():
         value = config.GetValue(key)
         if not value is None:
             window.GetList(id).SetFocusedItem(int(value))
+        window.GetList(id).SetVisible(True)
 
 def saveUserSettings():
     print "saving user-settings"
@@ -224,12 +314,11 @@ def status(msg, progress=0, max=0):
     window = GetWindow(WINDOW_ID)
     label = window.GetLabel(STATUS_ID)
     image = window.GetImage(PROGRESS_ID)
-    print(msg)
+    #print(msg)
     label.SetLabel(msg)
     if max:
         ratio = math.ceil(progress*10/max)/2 # number between 0-5 with increments of .5
         texture = 'stars_%02i.png' % (ratio * 10)
-        print "Texture: %s, %f" % (texture, ratio)
         image.SetTexture(texture)
         image.SetVisible(True)
     else:
@@ -319,6 +408,6 @@ def getTokenId():
     return None
 
 # Show the main window
-mc.ActivateWindow(14000)
+mc.ActivateWindow(WINDOW_ID)
 # restore default values
 restoreUserSettings()

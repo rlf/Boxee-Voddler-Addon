@@ -94,7 +94,7 @@ populateControls()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-search()
+search(True)
 ]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
@@ -155,7 +155,7 @@ search()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-search()
+search(True)
 ]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
@@ -216,7 +216,7 @@ search()
 	                	</focusedlayout>
 	                	<content type="action">
 	                		<onclick lang="python"><![CDATA[
-search()
+search(True)
 ]]></onclick>
 	                	</content>
 	            	</control><!-- list -->
@@ -275,6 +275,16 @@ saveUserSettings()
             	</control>
             </control>
 
+	        <control type="label" id="120"><!-- search results -->
+	            <posx>620</posx>
+	            <posy>90</posy>
+	            <width>620</width>
+	        	<height>20</height>
+	        	<font>font18b</font>
+	        	<textcolor>grey</textcolor>
+	        	<align>right</align>
+	        	<label/>
+	        </control>
 
             <control type="group"><!-- movie list + details -->
                 <posx>10</posx>
@@ -322,75 +332,78 @@ saveUserSettings()
 	            		<font>font22</font>
 	            	</control>
             	</control>
-	            <control type="list" id="200"><!-- movies -->
-					<ondown>201</ondown>
-	                <onup>203</onup>
+            	<control type="scrollbar" id="20">
+            		<posx>0</posx>
+            		<posy>10</posy>
+            		<width>10</width>
+            		<height>565</height>
+					<textureslidernib>bg.png</textureslidernib>
+					<textureslidernibfocus>bg.png</textureslidernibfocus>
+					<orientation>vertical</orientation>
+            	</control>
+	            <control type="fixedlist" id="200"><!-- movies -->
+	            	<onleft>201</onleft><!-- go to filters -->
+					<ondown lang="python">nextPage()</ondown>
+	                <onup lang="python">prevPage()</onup>
 	                <posx>10</posx>
 	                <posy>10</posy>
 	                <width>620</width>
 	                <height>565</height>
 	           		<scrolltime>200</scrolltime>
 	            	<orientation>vertical</orientation>
-	            	<itemlayout width="620" height="130">
+	            	<focusposition>2</focusposition>
+					<pagecontrol>20</pagecontrol>
+	            	<itemlayout width="575" height="110">
 	            		<control type="image">
-	            			<posx>0</posx>
+	            			<posx>30</posx>
 	            			<posy>0</posy>
-	            			<width>620</width>
-	            			<height>130</height>
+	            			<width>570</width>
+	            			<height>110</height>
 	            			<colordiffuse>6080FF80</colordiffuse>
 	            			<fadetime>200</fadetime>
 	            			<texture border="8">item_bg.png</texture>
 	            		</control>
-	            		<control type="label">
-	            			<posy>2</posy>
-	            			<posx>5</posx>
-	            			<width>36</width>
-	            			<height>12</height>
-	            			<font>font10</font>
-	            			<label>#$INFO[ListItem.property(custom:ix)]</label>
-	            			<textcolor>A0202020</textcolor>
-	            			<align>left</align>
-	            		</control>
 	            		<control type="group">
-		            		<posx>15</posx>
+		            		<posx>40</posx>
 		            		<posy>5</posy>
 			            	<control type="image">
 			            		<posx>0</posx>
 			            		<posy>5</posy>
-			            		<height>110</height>
-			            		<width>80</width>
+			            		<height>80</height>
+			            		<width>58</width>
 			            		<info>ListItem.Thumb</info>
 			            		<aspectratio>keep</aspectratio>
+			            		<fadetime>0</fadetime>
 			            	</control>
 			            	<control type="group">
-				            	<posx>20</posx>
+				            	<posx>24</posx>
 			                	<control type="label">
-			                    	<posx>69</posx>
+			                    	<posx>40</posx>
 			                    	<posy>0</posy>
 			                    	<width>505</width>
 			                    	<height>40</height>
-			                    	<font>font23b</font>
+			                    	<font>font22b</font>
 			                    	<aligny>left</aligny>
 			                    	<info>ListItem.Label</info>
-			                    	<textcolor>white</textcolor>
+			                    	<textcolor>FFD0D0D0</textcolor>
 			                	</control>
 			            		<control type="group"><!-- unfortunately progress is not very good atm. -->
-			            			<posx>69</posx>
+			            			<posx>40</posx>
 			            			<posy>26</posy>
-		            				<width>80</width>
-		            				<height>16</height>
+		            				<width>70</width>
+		            				<height>14</height>
 			            			<control type="image"><!-- disabled stars -->
-			            				<width>80</width>
-			            				<height>16</height>
+			            				<width>70</width>
+			            				<height>14</height>
 			            				<texture>stars_empty.png</texture>
 			            			</control>
 			            			<control type="image">
-			            				<width>80</width>
-			            				<height>16</height>
+			            				<width>70</width>
+			            				<height>14</height>
 			            				<texture>stars_$INFO[ListItem.property(custom:rating)].png</texture>
 			            			</control>
 				                	<control type="label">
-				                    	<posx>84</posx>
+				                    	<posx>78</posx>
 				                    	<posy>1</posy>
 				                    	<width>200</width>
 				                    	<height>50</height>
@@ -401,60 +414,50 @@ saveUserSettings()
 				                	</control>
 			            		</control>
 			                	<control type="label">
-			                    	<posx>69</posx>
+			                    	<posx>40</posx>
 			                    	<posy>42</posy>
 			                    	<width>450</width>
 			                    	<height>60</height>
-			                    	<font>font18</font>
+			                    	<font>font16</font>
 			                    	<aligny>left</aligny>
 			                    	<label>$INFO[ListItem.property(custom:genres)]</label>
 			                    	<textcolor>grey</textcolor>
 			                	</control>
-			                	<control type="label">
-			                    	<posx>69</posx>
-			                    	<posy>65</posy>
-			                    	<width>370</width>
-			                    	<height>60</height>
-			                    	<font>font14</font>
-			                    	<aligny>left</aligny>
-			                    	<info>ListItem.property(custom:cast)</info>
-			                    	<textcolor>grey</textcolor>
-			                    	<wrapmultiline>true</wrapmultiline>
-			                	</control>
-		                	</control>
-		                	<control type="group"><!-- lower right of list-item -->
-		                		<posx>458</posx>
-		                		<posy>84</posy>
-			                	<control type="image">
-			                    	<width>32</width>
-			                    	<height>32</height>
-			                    	<texture>trailer.png</texture>
-			                    	<visible>$INFO[ListItem.property(custom:hasTrailer)]</visible>
-			                	</control>
-			                	<control type="image">
-			                		<posx>34</posx>
-			                    	<width>32</width>
-			                    	<height>32</height>
-			                    	<texture>iphone.png</texture>
-			                    	<visible>$INFO[ListItem.property(custom:on_iphone)]</visible>
-			                	</control>
-			                	<control type="image">
-			                		<posx>68</posx>
-			                    	<width>32</width>
-			                    	<height>32</height>
-			                    	<texture>android.png</texture>
-			                    	<visible>$INFO[ListItem.property(custom:on_android)]</visible>
-			                	</control>
-			                	<control type="image">
-			                		<posx>102</posx>
-			                    	<width>32</width>
-			                    	<height>32</height>
-			                    	<texture>symbian.png</texture>
-			                    	<visible>$INFO[ListItem.property(custom:on_symbian)]</visible>
+			                	<control type="group">
+			                		<posx>440</posx>
+			                		<posy>70</posy>
+				                	<control type="image">
+				                    	<width>20</width>
+				                    	<height>20</height>
+				                    	<texture>trailer.png</texture>
+				                    	<visible>$INFO[ListItem.property(custom:hasTrailer)]</visible>
+				                	</control>
+				                	<control type="image">
+				                		<posx>21</posx>
+				                    	<width>20</width>
+				                    	<height>20</height>
+				                    	<texture>iphone.png</texture>
+				                    	<visible>$INFO[ListItem.property(custom:on_iphone)]</visible>
+				                	</control>
+				                	<control type="image">
+				                		<posx>42</posx>
+				                    	<width>20</width>
+				                    	<height>20</height>
+				                    	<texture>android.png</texture>
+				                    	<visible>$INFO[ListItem.property(custom:on_android)]</visible>
+				                	</control>
+				                	<control type="image">
+				                		<posx>63</posx>
+				                    	<width>20</width>
+				                    	<height>20</height>
+				                    	<texture>symbian.png</texture>
+				                    	<visible>$INFO[ListItem.property(custom:on_symbian)]</visible>
+				                	</control>
 			                	</control>
 		                	</control>
 	                	</control>
 	            	</itemlayout>
+
 	            	<focusedlayout width="620" height="130">
 	            		<control type="image">
 	            			<posx>0</posx>
@@ -467,13 +470,13 @@ saveUserSettings()
 	            		</control>
 	            		<control type="label">
 	            			<posy>2</posy>
-	            			<posx>5</posx>
+	            			<posx>615</posx>
 	            			<width>36</width>
 	            			<height>12</height>
-	            			<font>font10</font>
+	            			<font>font12b</font>
 	            			<label>#$INFO[ListItem.property(custom:ix)]</label>
-	            			<textcolor>A0202020</textcolor>
-	            			<align>left</align>
+	            			<textcolor>A0606060</textcolor>
+	            			<align>right</align>
 	            		</control>
 	            		<control type="group">
 		            		<posx>15</posx>
@@ -590,6 +593,17 @@ selectMovie()
             </control>
         </control>
 
+        <control type="label" id="110"><!-- page number -->
+            <posx>10</posx>
+            <posy>680</posy>
+            <width>620</width>
+        	<height>20</height>
+        	<font>font18b</font>
+        	<textcolor>grey</textcolor>
+        	<align>center</align>
+        	<label/>
+        </control>
+
         <control type="group"><!-- status -->
         	<!-- 1280/2=640, 720/2=360 -->
         	<posx>430</posx>
@@ -639,7 +653,7 @@ selectMovie()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.2</label>
+        	<label>v0.4</label>
         </control>
     </controls>
 </window>
