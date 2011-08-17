@@ -24,7 +24,10 @@ genreFilter = {'movie' : 'movies'}
 def getURL(url, postData=None):
     f = urllib2.urlopen(url, postData)
     data = f.read()
-    print "%s?%s\n%s" % (url, postData, data)
+    if postData:
+        print "%s?%s\n%s" % (url, postData, data)
+    else:
+        print "%s\n%s" % (url, data)
     return data
 
 def getGenres(type='movie'):

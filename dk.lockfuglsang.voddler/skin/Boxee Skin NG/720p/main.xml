@@ -84,7 +84,7 @@ load()
 					<control type="image">
 						<width>250</width>
 						<height>180</height>
-						<texture border="30">button_action_menu_source_on.png</texture>
+						<texture border="30">btn_action_menu_source_on.png</texture>
 						<visible>Control(100).HasFocus()</visible>
 					</control>
 				</focusedlayout>

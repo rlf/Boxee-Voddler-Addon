@@ -54,7 +54,9 @@ def restoreLoginSettings():
     username = config.GetValue('username')
     password = config.GetValue('password')
     sessionId = config.GetValue('sessionId')
-    sessionTimestamp = int(config.GetValue('sessionTimeStamp'))
+    sessionTimestamp = config.GetValue('sessionTimeStamp')
+    if sessionTimestamp:
+        sessionTimestamp = int(sessionTimestamp)
 
 def saveLoginSettings():
     config = mc.GetApp().GetLocalConfig()

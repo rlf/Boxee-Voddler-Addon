@@ -102,7 +102,7 @@ loadPage()
             			<posy>0</posy>
             			<width>180</width>
             			<height>50</height>
-            			<texture border="25">button_action_menu_source_on.png</texture>
+            			<texture border="25">btn_action_menu_source_on.png</texture>
             		</control>
 
 
@@ -172,7 +172,7 @@ loadPage()
             			<posy>56</posy>
             			<width>240</width>
             			<height>50</height>
-            			<texture border="30">button_action_menu_source_on.png</texture>
+            			<texture border="30">btn_action_menu_source_on.png</texture>
             		</control>
 
 	            	<control type="group"><!-- type: all, free, premium -->
@@ -243,7 +243,7 @@ loadPage()
 	        			<posy>32</posy>
 	        			<width>198</width>
 	        			<height>52</height>
-	        			<texture border="30">button_action_menu_source_on.png</texture>
+	        			<texture border="30">btn_action_menu_source_on.png</texture>
 	        		</control>
 
 	            </control><!-- filter -->

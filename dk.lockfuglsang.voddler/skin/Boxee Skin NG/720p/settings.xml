@@ -118,7 +118,7 @@ saveSettings()
 						<posx>290</posx>
 						<width>620</width>
 						<height>56</height>
-						<texture border="30">button_action_menu_source_on.png</texture>
+						<texture border="30">btn_action_menu_source_on.png</texture>
 						<visible>Control.HasFocus(1001)</visible>
 					</control>
         		</control>
@@ -207,7 +207,7 @@ saveSettings()
 						<posx>290</posx>
 						<width>620</width>
 						<height>56</height>
-						<texture border="30">button_action_menu_source_on.png</texture>
+						<texture border="30">btn_action_menu_source_on.png</texture>
 						<visible>Control.HasFocus(1002)</visible>
 					</control>
         		</control>
