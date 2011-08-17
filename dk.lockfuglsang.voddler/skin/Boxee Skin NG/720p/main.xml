@@ -91,43 +91,60 @@ load()
 					from main import *
 					selectWindow()
 					]]></onclick>
-					<item id="14000">
+					<item id="350">
 						<label>Movies</label>
 						<thumb>movies.png</thumb>
 						<label2>Allows you to browse the movie-catalog of Voddler</label2>
-						<onclick><![CDATA[]]></onclick>
+						<onclick>
+							<![CDATA[]]>
+							ActivateWindow(14000)
+						</onclick>
+						<onleft>SetFocus(356)</onleft>
+						<onright>SetFocus(351)</onright>
 					</item>
-					<item id="2">
+					<item id="351">
 						<label>TVSeries</label>
 						<thumb>series.png</thumb>
 						<label2>Browse TVSeries of the Voddler-catalog</label2>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(350)</onleft>
+						<onright>SetFocus(352)</onright>
 					</item>
-					<item id="3">
+					<item id="352">
 						<label>Documentaries</label>
 						<thumb>documentaries.png</thumb>
 						<label2>See Documentaries from the Voddler-catalog</label2>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(351)</onleft>
+						<onright>SetFocus(353)</onright>
 					</item>
-					<item id="4">
+					<item id="353">
 						<label>Favorites</label>
 						<thumb>favorites.png</thumb>
 						<label2>Play and manage your favorites</label2>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(352)</onleft>
+						<onright>SetFocus(354)</onright>
 					</item>
-					<item id="4">
+					<item id="354">
 						<label>Playlist</label>
 						<thumb>playlist.png</thumb>
 						<label2>Play and manage your playlist</label2>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(353)</onleft>
+						<onright>SetFocus(355)</onright>
 					</item>
-					<item id="5">
+					<item id="355">
 						<label>Login</label>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(354)</onleft>
+						<onright>SetFocus(356)</onright>
 					</item>
-					<item id="6">
+					<item id="356">
 						<label>Logout</label>
 						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(355)</onleft>
+						<onright>SetFocus(350)</onright>
 					</item>
 				</content>
 			</control>
