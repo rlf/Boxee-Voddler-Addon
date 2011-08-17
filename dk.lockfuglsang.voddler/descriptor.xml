@@ -10,7 +10,7 @@
   <copyright>LGPL</copyright>
   <email>rasmus@lockfuglsang.dk</email>
   <type>skin</type>
-  <startWindow>default</startWindow>
+  <startWindow>14001</startWindow>
   <platform>all</platform>
   <minversion>0.9.12</minversion>
   <test-app>true</test-app>

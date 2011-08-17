@@ -14,19 +14,23 @@ try: import json
 except: import simplejson as json
 from pprint import pprint
 
+import login
+
 # IDs
 WINDOW_ID=14000
 STATUS_ID=100
 PROGRESS_ID=600
-USERNAME_ID=501
-PASSWORD_ID=502
 USERNAME_LBL_ID=102
+
+MOVIES_ID=200
+
+GENRE_ID=201
+SORTING_ID=202
+CATEGORY_ID=203
 
 # URLs
 BASE_URL = "http://api.voddler.com/metaapi/"
-LOGIN_URL = "https://api.voddler.com/userapi/login/1?username=%s&password=%s"
 SEARCH_URL = BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=%i&count=%s"
-TOKEN_URL = "https://api.voddler.com/userapi/vnettoken/1?session=%s"
 PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
 PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
 
@@ -37,8 +41,6 @@ PLATFORMS = ['iphone', 'web', 'android', 'symbian']
 TIME_BETWEEN_SEARCHES = 3 # at least 3 seconds between searches - makes sure that we don't accidentially skip pages
 
 # Global vars
-sessionId = None
-genre = None
 pageCache = {}
 currentMovieIndex = 1
 currentPage = 0
@@ -46,7 +48,6 @@ lastPage = 0
 maxPage = 0
 maxCount = 0
 lastSearch = 0
-autoLogin = True
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
@@ -74,7 +75,7 @@ def search(reset=False):
     ShowDialogWait()
     saveUserSettings()
     window = GetWindow(WINDOW_ID)
-    mainList = window.GetList(200)
+    mainList = window.GetList(MOVIES_ID)
     statusLabel = window.GetLabel(120)
     statusLabel.SetVisible(False)
     if reset:
@@ -139,7 +140,7 @@ def nextPage():
     else:
         currentPage = 0
         search()
-    GetWindow(WINDOW_ID).GetList(200).SetFocusedItem(0)
+    GetWindow(WINDOW_ID).GetList(MOVIES_ID).SetFocusedItem(0)
 
 def prevPage():
     global currentPage, maxPage
@@ -151,7 +152,7 @@ def prevPage():
     else:
         currentPage = maxPage
         search()
-    list = GetWindow(WINDOW_ID).GetList(200)
+    list = GetWindow(WINDOW_ID).GetList(MOVIES_ID)
     list.SetFocusedItem(len(list.GetItems())-1)
 
 def showMovieOnListItem(item, movie, index):
@@ -226,7 +227,7 @@ def populateGenre():
     data = json.loads(jsonData)
     #pprint(data)
     items = mc.ListItems()
-    global genreCache, genre
+    global genreCache
     genreCache = {}
     for g in data[u'data']:
         #pprint(g)
@@ -235,6 +236,7 @@ def populateGenre():
         item.SetProperty('value', str(g[u'value']))
         genreCache[g[u'value']] = item
         items.append(item)
+    genre = mc.GetActiveWindow().GetList(GENRE_ID)
     genre.SetItems(items)
 
 def populateSorting():
@@ -248,7 +250,7 @@ def populateSorting():
             item.SetIcon("sort_%s_on.png" % g['value'])
             item.SetThumbnail("sort_%s.png" % g['value'])
             items.append(item)
-    sorting.SetItems(items)
+    mc.GetActiveWindow().GetList(SORTING_ID).SetItems(items)
 
 def populateCategory():
     items = mc.ListItems()
@@ -259,42 +261,37 @@ def populateCategory():
             item.SetLabel(g['name'])
             item.SetProperty('value', g['value'])
             items.append(item)
-    category.SetItems(items)
+    mc.GetActiveWindow().GetList(CATEGORY_ID).SetItems(items)
 
 def populateLists():
     window = GetWindow(WINDOW_ID)
-    for listId in [200]:
-        list = window.GetList(listId)
-        items = ListItems()
-        item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
-        items.append(item)
-        list.SetItems(items)
-        list.SetVisible(False)
+    list = window.GetList(MOVIES_ID)
+    items = ListItems()
+    item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+    items.append(item)
+    list.SetItems(items)
+    list.SetVisible(False)
 
 def populateControls():
-    global genre, sorting, category
     # Initialize UI
     ShowDialogWait()
     try:
-        genre = GetWindow(WINDOW_ID).GetList(201)
-        sorting = GetWindow(WINDOW_ID).GetList(202)
-        category = GetWindow(WINDOW_ID).GetList(203)
-        for list in [genre, sorting, category]:
-            list.SetVisible(False)
+        window = GetActiveWindow()
+        for id in [GENRE_ID, SORTING_ID, CATEGORY_ID]:
+            window.GetList(id).SetVisible(False)
+        if login.getLoggedIn():
+            window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
         populateSorting()
         populateCategory()
         populateGenre()
         populateLists()
         restoreUserSettings()
-        tryLogin()
     finally:
         hideWaitDialog()
-    print "RUNNING from populateControls"
 
 # -----------------------------------------------------------------------------
 # User Settings
 # -----------------------------------------------------------------------------
-editFields = {'username' : USERNAME_ID, 'password' : PASSWORD_ID}
 listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
 def restoreUserSettings():
     global autoLogin
@@ -302,10 +299,10 @@ def restoreUserSettings():
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
 
-    for key, id in editFields.items():
-        value = config.GetValue(key)
-        if not value is None:
-            window.GetEdit(id).SetText(value)
+#    for key, id in editFields.items():
+#        value = config.GetValue(key)
+#        if not value is None:
+#            GetWindow(LOGIN_ID).GetEdit(id).SetText(value)
 
     for key, id in listFields.items():
         value = config.GetValue(key)
@@ -320,9 +317,9 @@ def saveUserSettings():
     print "saving user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
-    for key, id in editFields.items():
-        value = window.GetEdit(id).GetText()
-        config.SetValue(key, value)
+#    for key, id in editFields.items():
+#        value = GetWindow(LOGIN_ID).GetEdit(id).GetText()
+#        config.SetValue(key, value)
     for key, id in listFields.items():
         value = window.GetList(id).GetFocusedItem()
         config.SetValue(key, "%i" % value)
@@ -376,22 +373,20 @@ def getGenres(genres):
             genre.append(genreCache[g].GetLabel())
     return string.join(genre, ', ')
 
-def _getListItemValue(list):
+def _getListItemValue(listId):
+    list = GetActiveWindow().GetList(listId)
     focusIndex = list.GetFocusedItem()
     focusItem = list.GetItem(focusIndex)
     return focusItem.GetProperty('value')
 
 def getGenre():
-    global genre
-    return _getListItemValue(genre)
+    return _getListItemValue(GENRE_ID)
 
 def getSorting():
-    global sorting
-    return _getListItemValue(sorting)
+    return _getListItemValue(SORTING_ID)
 
 def getCategory():
-    global category
-    return _getListItemValue(category)
+    return _getListItemValue(CATEGORY_ID)
 
 def getURL(url, postData=None):
     f = urllib2.urlopen(url, postData)
@@ -399,86 +394,15 @@ def getURL(url, postData=None):
     print url + ":\n" + data
     return data
 
-def logout():
-    global sessionId, autoLogin
-    sessionId = None
-    autoLogin = False
-    GetWindow(WINDOW_ID).GetEdit(PASSWORD_ID).SetText("") # clear password as well
-    saveUserSettings()
-    CloseWindow()
-
-def tryLogin():
-    global autoLogin
-    if autoLogin:
-        doLogin()
-    else:
-        showLogin()
-
-def showLogin():
-    window = GetWindow(WINDOW_ID)
-    loginCtrl = window.GetControl(999)
-    loginCtrl.SetVisible(True)
-    window.GetEdit(USERNAME_ID).SetFocus()
-
-def doLogin():
-    global autoLogin
-    window = GetWindow(WINDOW_ID)
-    loginCtrl = window.GetControl(999)
-    logoutCtrl = window.GetButton(503)
-    loginCtrl.SetVisible(False)
-    logoutCtrl.SetVisible(False)
-    if not checkLogIn():
-        showLogin()
-    else:
-        logoutCtrl.SetVisible(True)
-        loginCtrl.SetVisible(False)
-        # execute the search
-        autoLogin = True
-        saveUserSettings()
-        search(True)
-
-def checkLogIn():
-    return getSessionId() != None
-
-def getSessionId():
-    global sessionId
-    window = GetWindow(WINDOW_ID)
-    if sessionId:
-        return sessionId
-    username = window.GetEdit(USERNAME_ID).GetText()
-    password = window.GetEdit(PASSWORD_ID).GetText()
-    status("Logging in as %s" % username)
-    try:
-        jsonData = getURL(LOGIN_URL, urllib.urlencode({'username' : username, 'password' : password}))
-        data = json.loads(jsonData)
-        pprint(data)
-        if data[u'success']:
-            sessionId = data[u'data'][u'session'].encode('ascii')
-        else:
-            sessionId = None
-            error("Error authenticating %s[CR][CR]%s" % (username, data[u'message']))
-    except urllib2.HTTPError, e:
-        sessionId = None
-        error("Error authenticating %s[CR][CR]%s" % (username, e))
-    if sessionId:
-        window.GetLabel(USERNAME_LBL_ID).SetLabel("%s" % username)
-    return sessionId
-
-def getTokenId():
-    status("Retrieving token");
-    jsonData = getURL(TOKEN_URL % getSessionId())
-    data = json.loads(jsonData)
-    pprint(data)
-    if data[u'success']:
-        return data[u'data'][u'token'].encode('ascii')
-    else:
-        sessionId = None
-        error("Error retrieving token: %s" % data[u'message'].encode('ascii'))
-    return None
-
 def loadPage():
+    mc.GetActiveWindow().GetControl(1).SetVisible(False)
+    mc.ShowDialogWait()
     populateControls()
     restoreUserSettings()
+    search(True)
+    hideWaitDialog()
+    mc.GetActiveWindow().GetControl(1).SetVisible(True)
 
-# Show the main window
-mc.ActivateWindow(WINDOW_ID)
+if __name__ == '__main__':
+    # Show the main window
+    mc.ActivateWindow(WINDOW_ID)
