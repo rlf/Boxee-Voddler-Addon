@@ -26,6 +26,12 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.6
+* Introduced main-screen
+* Settings menu (movies per page, player)
+* Use of dialogs for login + status
+* Improved performance
+
 v0.5
 * Better login-support (status of login)
 * Brush-up of filter-gui (navigation is a bit odd)

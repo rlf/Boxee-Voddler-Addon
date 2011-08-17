@@ -4,11 +4,15 @@
 	<allowoverlay>yes</allowoverlay>
 	<zorder>1</zorder>
 	<backgroundcolor>00000000</backgroundcolor>
-	<animation effect="fade" time="100">WindowOpen</animation>
+	<animation effect="slide" start="0,576" time="100">WindowOpen</animation>
   	<animation effect="slide" end="0,576" time="100">WindowClose</animation>
 	<onload lang="python"><![CDATA[
 from login import *
+loadLogin()
 ]]></onload>
+	<onunload lang="python"><![CDATA[
+unloadLogin()
+]]></onunload>
 	<coordinates>
 		<posx>370</posx>
 		<posy>280</posy>
@@ -63,11 +67,12 @@ from login import *
 	        	<control type="button" id="700">
 	        		<ondown>501</ondown>
 	        		<onup>502</onup>
+	        		<onright>701</onright>
+	        		<onleft>701</onleft>
 	        		<posy>120</posy>
-	        		<posx>125</posx>
+	        		<posx>10</posx>
 	        		<width>250</width>
 	        		<height>60</height>
-	        		<posy>80</posy>
 	        		<font>font24</font>
 	        		<label>Login</label>
 	        		<align>center</align>
@@ -76,7 +81,26 @@ from login import *
 	                <texturenofocus border="30">button_action_menu_source_nofocus.png</texturenofocus>
 	                <textureclick border="30">button_action_menu_source_click.png</textureclick>
 					<onclick lang="python">doLogin()</onclick>
-					<onclick>Dialog.Close(14010)</onclick>
+	        	</control>
+	        	<control type="button" id="701">
+	        		<ondown>501</ondown>
+	        		<onup>502</onup>
+	        		<onright>700</onright>
+	        		<onleft>700</onleft>
+	        		<posy>120</posy>
+	        		<posx>240</posx>
+	        		<width>250</width>
+	        		<height>60</height>
+	        		<font>font24</font>
+	        		<label>Exit</label>
+	        		<align>center</align>
+	        		<textoffsety>15</textoffsety>
+	                <texturefocus border="30">button_action_menu_source_on.png</texturefocus>
+	                <texturenofocus border="30">button_action_menu_source_nofocus.png</texturenofocus>
+	                <textureclick border="30">button_action_menu_source_click.png</textureclick>
+					<onclick lang="python"><![CDATA[
+exitLogin()
+]]></onclick>
 	        	</control>
         	</control>
         </control>

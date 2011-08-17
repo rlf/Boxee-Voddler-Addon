@@ -2,7 +2,6 @@
 <window type="dialog" id="14020">
 	<allowoverlay>yes</allowoverlay>
 	<zorder>1</zorder>
-	<visible>true</visible>
 	<backgroundcolor>blue</backgroundcolor>
 	<controls>
         <control type="group"><!-- status -->
@@ -27,7 +26,6 @@
         		<textcolor>white</textcolor>
         		<label></label>
         		<wrapmultiline>true</wrapmultiline>
-        		<visible>false</visible>
         		<align>center</align>
         	</control>
         	<control type="image">

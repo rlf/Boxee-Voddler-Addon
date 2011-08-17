@@ -6,20 +6,16 @@
 import string, math
 import mc
 from mc import *
-import urllib
-import urllib2
 import time
 
-try: import json
-except: import simplejson as json
 from pprint import pprint
 
 import login
+from status import *
+import voddlerapi
 
 # IDs
 WINDOW_ID=14000
-STATUS_ID=100
-PROGRESS_ID=600
 USERNAME_LBL_ID=102
 
 MOVIES_ID=200
@@ -27,16 +23,11 @@ MOVIES_ID=200
 GENRE_ID=201
 SORTING_ID=202
 CATEGORY_ID=203
-
-# URLs
-BASE_URL = "http://api.voddler.com/metaapi/"
-SEARCH_URL = BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=%i&count=%s"
-PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
-PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
+PAGE_LABEL=110
+STATUS_LABEL=120
 
 # Constants
-PLAYER=1
-PAGE_SIZE=50
+pageSize=100
 PLATFORMS = ['iphone', 'web', 'android', 'symbian']
 TIME_BETWEEN_SEARCHES = 3 # at least 3 seconds between searches - makes sure that we don't accidentially skip pages
 
@@ -59,48 +50,47 @@ def selectMovie(listId=200):
     ShowDialogWait()
     status("Playing movie %s" % movie.GetLabel())
     try:
-        url = getMovieURL(movie.GetProperty('id'))
-        if url:
-            print "- url %s" % url
-            movie.SetPath(url)
-            hideWaitDialog()
-            GetPlayer().PlayWithActionMenu(movie)
-        else:
-            print "error playing movie"
+        url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
+        hideWaitDialog()
+        if not url:
+            url = movie.GetProperty('url')
+        print "Playing %s" % url
+        movie.SetPath(url)
+        GetPlayer().PlayWithActionMenu(movie)
     finally:
         hideWaitDialog()
 
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch
     ShowDialogWait()
+    status("Searching...")
     saveUserSettings()
     window = GetWindow(WINDOW_ID)
     mainList = window.GetList(MOVIES_ID)
-    statusLabel = window.GetLabel(120)
+    statusLabel = window.GetLabel(STATUS_LABEL)
     statusLabel.SetVisible(False)
     if reset:
         currentPage = 0
         pageCache = {}
         lastPage = 0
     try:
-        g = urllib.quote(getGenre())
-        s = urllib.quote(getSorting())
-        c = urllib.quote(getCategory())
-        offset = currentPage * PAGE_SIZE
+        g = getGenre()
+        s = getSorting()
+        c = getCategory()
+        offset = currentPage * pageSize
         items = ListItems()
         if currentPage in pageCache.keys():
             items = pageCache[currentPage]
         else:
             status("Fetching page %i" % (currentPage+1))
-            jsonData = getURL(SEARCH_URL % (c, g, s, offset, PAGE_SIZE));
-            data = json.loads(jsonData)
+            data = voddlerapi.searchVoddler('movie', c, g, s, offset, pageSize)
             maxCount = int(data[u'data'][u'count'])
-            maxPage = (maxCount-1) / PAGE_SIZE
+            maxPage = (maxCount-1) / pageSize
             if maxPage < 0:
                 maxPage = 0
-            itemsOnCurrentPage = min(PAGE_SIZE, maxCount, maxCount - (currentPage*PAGE_SIZE))
+            itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
             for index, movie in enumerate(data[u'data'][u'videos']):
-                status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+                status("Genrating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
                 item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
                 showMovieOnListItem(item, movie, index + offset)
                 items.append(item)
@@ -114,7 +104,7 @@ def search(reset=False):
             statusLabel.SetLabel("showing %i-%i of %i" % (offset+1, offset+len(items), maxCount))
             mainList.SetVisible(True)
         statusLabel.SetVisible(True)
-        window.GetLabel(110).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
+        window.GetLabel(PAGE_LABEL).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
     finally:
         hideWaitDialog()
         if mainList.IsVisible():
@@ -183,6 +173,7 @@ def showMovieOnListItem(item, movie, index):
     item.SetIcon(iconUrl)
     item.SetProperty('poster', iconUrl)
     item.SetPath(movieUrl)
+    item.SetProperty('url', movieUrl)
     item.SetContentType('text/html')
     item.SetStarRating(rating)
     item.SetProperty('rating', "%02i" % (math.floor(rating * 20) / 2))
@@ -223,8 +214,7 @@ def showMovieOnListItem(item, movie, index):
 # Populate Controls
 # -----------------------------------------------------------------------------
 def populateGenre():
-    jsonData = getURL(BASE_URL + "genres/1?type=movies")
-    data = json.loads(jsonData)
+    data = voddlerapi.getGenres('movie')
     #pprint(data)
     items = mc.ListItems()
     global genreCache
@@ -241,7 +231,7 @@ def populateGenre():
 
 def populateSorting():
     items = mc.ListItems()
-    data = [{'name' : 'Alphabetical', 'value' : 'alphabetical'}, {'name' : 'Views', 'value' : 'views'}, {'name' : 'Rating', 'value' : 'rating'}]
+    data = [{'name' : 'Rating', 'value' : 'rating'}, {'name' : 'Views', 'value' : 'views'}, {'name' : 'Alphabetical', 'value' : 'alphabetical'}]
     for g in data:
         if g['name']:
             item = ListItem(ListItem.MEDIA_UNKNOWN)
@@ -254,7 +244,7 @@ def populateSorting():
 
 def populateCategory():
     items = mc.ListItems()
-    data = [{'name' : 'All', 'value' : 'all'}, {'name' : 'Rent', 'value' : 'premium'}, {'name' : 'Free', 'value' : 'free'}]
+    data = [{'name' : 'Free', 'value' : 'free'}, {'name' : 'Rent', 'value' : 'premium'}, {'name' : 'All', 'value' : 'all'}]
     for g in data:
         if g['name']:
             item = ListItem(ListItem.MEDIA_UNKNOWN)
@@ -294,75 +284,31 @@ def populateControls():
 # -----------------------------------------------------------------------------
 listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
 def restoreUserSettings():
-    global autoLogin
     print "restoring user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
 
-#    for key, id in editFields.items():
-#        value = config.GetValue(key)
-#        if not value is None:
-#            GetWindow(LOGIN_ID).GetEdit(id).SetText(value)
-
+    numPages = config.GetValue('pages')
+    if numPages:
+        pageSize = numPages
     for key, id in listFields.items():
         value = config.GetValue(key)
         print "restoring %s as %s" % (key, value)
         if value or value == 0:
             window.GetList(id).SetFocusedItem(int(value))
         window.GetList(id).SetVisible(True)
-    autoLogin = (config.GetValue('autoLogin') == 'True')
 
 def saveUserSettings():
-    global autoLogin
     print "saving user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
-#    for key, id in editFields.items():
-#        value = GetWindow(LOGIN_ID).GetEdit(id).GetText()
-#        config.SetValue(key, value)
     for key, id in listFields.items():
         value = window.GetList(id).GetFocusedItem()
         config.SetValue(key, "%i" % value)
-    config.SetValue('autoLogin', "%s" % autoLogin)
 
 # -----------------------------------------------------------------------------
 # Helper / Library Methods
 # -----------------------------------------------------------------------------
-def status(msg, progress=0, max=0):
-    window = GetWindow(WINDOW_ID)
-    label = window.GetLabel(STATUS_ID)
-    image = window.GetImage(PROGRESS_ID)
-    #print(msg)
-    label.SetLabel(msg)
-    if max:
-        ratio = math.ceil(progress*10/max)/2 # number between 0-5 with increments of .5
-        texture = 'stars_%02i.png' % (ratio * 10)
-        image.SetTexture(texture)
-        image.SetVisible(True)
-    else:
-        image.SetVisible(False)
-    label.SetVisible(True)
-
-def error(msg):
-    ShowDialogOk("Error", msg)
-
-def hideWaitDialog():
-    window = GetWindow(WINDOW_ID)
-    label = window.GetLabel(STATUS_ID)
-    label.SetVisible(False)
-    mc.HideDialogWait()
-
-def getMovieURL(id):
-    if PLAYER==1:
-        sId = getSessionId()
-        if sId:
-            return PLAYER1_URL % (sId, id)
-    elif PLAYER==2:
-        token = getTokenId()
-        if token:
-            return PLAYER2_URL % (token, id)
-    return None
-
 def getGenres(genres):
     global genreCache
     if not genreCache:
@@ -388,18 +334,19 @@ def getSorting():
 def getCategory():
     return _getListItemValue(CATEGORY_ID)
 
-def getURL(url, postData=None):
-    f = urllib2.urlopen(url, postData)
-    data = f.read()
-    print url + ":\n" + data
-    return data
-
 def loadPage():
+    global pageCache, currentPage, maxPage
     mc.GetActiveWindow().GetControl(1).SetVisible(False)
     mc.ShowDialogWait()
-    populateControls()
-    restoreUserSettings()
-    search(True)
+    if not pageCache:
+        populateControls()
+        restoreUserSettings()
+        search(True)
+    else:
+        window = mc.GetActiveWindow()
+        window.GetLabel(PAGE_LABEL).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
+        offset = currentPage * pageSize
+        window.GetLabel(STATUS_LABEL).SetLabel("showing %i-%i of %i" % (offset+1, offset+len(pageCache[currentPage]), maxCount))
     hideWaitDialog()
     mc.GetActiveWindow().GetControl(1).SetVisible(True)
 

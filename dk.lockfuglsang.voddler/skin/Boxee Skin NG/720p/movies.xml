@@ -13,7 +13,7 @@ Convention:
     <defaultcontrol always="true">201</defaultcontrol>
     <allowoverlay>yes</allowoverlay>
 	<onload lang="python"><![CDATA[
-from default import *
+from movies import *
 loadPage()
 ]]></onload>
     <controls>
@@ -330,8 +330,18 @@ loadPage()
             	</control>
 	            <control type="fixedlist" id="200"><!-- movies -->
 	            	<onleft>201</onleft><!-- go to filters -->
-					<ondown lang="python">nextPage()</ondown>
-	                <onup lang="python">prevPage()</onup>
+					<ondown lang="python"><![CDATA[
+nextPage()
+]]></ondown>
+					<onnext lang="python"><![CDATA[
+nextPage()
+]]></onnext>
+	                <onup lang="python"><![CDATA[
+prevPage()
+]]></onup>
+	                <onprev lang="python"><![CDATA[
+prevPage()
+]]></onprev>
 	                <posx>10</posx>
 	                <posy>10</posy>
 	                <width>620</width>

@@ -1,11 +1,9 @@
 # login.py - all related to login
 
-import mc
+import mc, xbmc
 from status import *
 import urllib2
-import urllib
-try: import json
-except: import simplejson as json
+import time
 
 import voddlerapi
 from pprint import pprint
@@ -14,12 +12,35 @@ LOGIN_ID=14010
 
 USERNAME_ID=501
 PASSWORD_ID=502
-LOGIN_URL = "https://api.voddler.com/userapi/login/1"
-TOKEN_URL = "https://api.voddler.com/userapi/vnettoken/1"
-
+LOGIN_BTN = 700
+SESSION_TIMEOUT = 60*60*24 # 24 hr timeout - in reality it's indefinitely (or until another login has occurred).
 sessionId = None
 username = None
 password = None
+sessionTimestamp = 0
+_callback = None
+
+def loadLogin():
+    global username, password
+    window = mc.GetWindow(LOGIN_ID)
+    if username:
+        window.GetEdit(USERNAME_ID).SetText(username)
+    if password:
+        window.GetEdit(PASSWORD_ID).SetText(password)
+    if username and password:
+        window.GetControl(LOGIN_BTN).SetFocus()
+    elif username:
+        window.GetEdit(PASSWORD_ID).SetFocus()
+    else:
+        window.GetEdit(USERNAME_ID).SetFocus()
+
+def unloadLogin():
+    if _callback:
+        _callback()
+
+def exitLogin():
+    xbmc.executebuiltin('Dialog.Close(%s)' % LOGIN_ID)
+    mc.CloseWindow()
 
 def getLoggedIn():
     global username, sessionId
@@ -28,20 +49,28 @@ def getLoggedIn():
     return ''
 
 def restoreLoginSettings():
-    global username, password
+    global username, password, sessionId, sessionTimestamp
     config = mc.GetApp().GetLocalConfig()
     username = config.GetValue('username')
     password = config.GetValue('password')
+    sessionId = config.GetValue('sessionId')
+    sessionTimestamp = int(config.GetValue('sessionTimeStamp'))
 
 def saveLoginSettings():
     config = mc.GetApp().GetLocalConfig()
-    global username, password
+    global username, password, sessionId, sessionTimestamp
     if username is None:
         username = ''
     if password is None:
         password = ''
     config.SetValue('username', username)
     config.SetValue('password', password)
+    if sessionId:
+        config.SetValue('sessionId', sessionId)
+        config.SetValue('sessionTimeStamp', '%i' % sessionTimestamp)
+    else:
+        config.SetValue('sessionId', '')
+        config.SetValue('sessionTimeStamp', '0')
 
 def textChanged():
     global username, password
@@ -56,45 +85,51 @@ def logout():
     password = None
     saveLoginSettings()
     if oldSessionId:
-        status("Logged %s out" % username)
+        info("Logged %s out" % username)
     else:
-        status("Logged out")
+        info("Logged out")
 
-def login():
+def login(callback=None):
+    global _callback
+    _callback = callback
     restoreLoginSettings()
-    showLogin()
+    if not checkLogin():
+        showLogin()
+    elif _callback:
+        _callback()
 
 def showLogin():
-    global username, password
     mc.ActivateWindow(LOGIN_ID)
-    window = mc.GetWindow(LOGIN_ID)
-    window.GetEdit(USERNAME_ID).SetText(username)
-    window.GetEdit(PASSWORD_ID).SetText(password)
 
 def doLogin():
+    global _callback
     mc.ShowDialogWait()
-    saveLoginSettings()
-    if not checkLogIn():
+    if not checkLogin():
         mc.ActivateWindow(LOGIN_ID)
+    else:
+        saveLoginSettings()
+        xbmc.executebuiltin('Dialog.Close(%s)' % LOGIN_ID)
+        if _callback:
+            _callback()
     hideWaitDialog()
 
-def checkLogIn():
+def checkLogin():
     return getSessionId() != None
 
 def getSessionId():
-    global sessionId, username, password
+    global sessionId, username, password, sessionTimestamp
     if not (username and password):
         print "username or password was not set!"
         return None
-    if sessionId:
+    if sessionId and ((time.time() - sessionTimestamp) < SESSION_TIMEOUT):
         return sessionId
     status("Logging in as %s" % username)
     try:
-        jsonData = voddlerapi.getURL(LOGIN_URL, urllib.urlencode({'username' : username, 'password' : password}))
-        data = json.loads(jsonData)
+        data = voddlerapi.login(username, password)
         pprint(data)
         if data[u'success']:
             sessionId = data[u'data'][u'session'].encode('ascii')
+            sessionTimestamp = time.time()
             status("Successfully logged in as %s" % username)
         else:
             sessionId = None
@@ -109,8 +144,7 @@ def getTokenId():
     sessionId = getSessionId()
     if not sessionId:
         return None
-    jsonData = voddlerapi.getURL(TOKEN_URL, urllib.urlencode({'session' : sessionId}))
-    data = json.loads(jsonData)
+    data = voddlerapi.getToken(sessionId)
     pprint(data)
     if data[u'success']:
         return data[u'data'][u'token'].encode('ascii')

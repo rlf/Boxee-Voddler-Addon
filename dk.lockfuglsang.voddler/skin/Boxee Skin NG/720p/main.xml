@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <window type="window" id="14001">
-	<default always="true">100</default>
+	<defaultcontrol always="true">100</defaultcontrol>
 	<allowoverlay>yes</allowoverlay>
 	<onload lang="python"><![CDATA[
 from main import *
@@ -48,6 +48,7 @@ load()
 						<info>ListItem.Icon</info>
 						<align>center</align>
 						<colordiffuse>60FFFFFF</colordiffuse>
+						<aspectratio>keep</aspectratio>
 					</control>
 					<control type="label">
 						<posx>120</posx>
@@ -68,6 +69,7 @@ load()
 						<height>72</height>
 						<info>ListItem.Icon</info>
 						<align>center</align>
+						<aspectratio>keep</aspectratio>
 					</control>
 					<control type="label">
 						<posx>120</posx>
@@ -121,11 +123,13 @@ selectWindow()
 						<onclick><![CDATA[]]></onclick>
 					</item>
 					<item id="5">
-						<label>Login</label>
+						<label>Settings</label>
+						<thumb>icons/icon_settings_system.png</thumb>
 						<onclick><![CDATA[]]></onclick>
 					</item>
 					<item id="6">
 						<label>Logout</label>
+						<thumb>icons/icon_menu_logout.png</thumb>
 						<onclick><![CDATA[]]></onclick>
 					</item>
 				</content>
