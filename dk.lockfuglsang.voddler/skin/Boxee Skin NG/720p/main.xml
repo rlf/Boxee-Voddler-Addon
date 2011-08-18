@@ -11,18 +11,11 @@ load()
         <control type="image">
             <width>1280</width>
             <height>720</height>
-            <texture>background.jpg</texture>
+			<texture>background.jpg</texture>
+			<!--
+            <texture>debuggrid.png</texture>
+             -->
         </control>
-		<control type="label" id="102"><!-- login name -->
-			<posx>1260</posx>
-			<posy>5</posy>
-			<width>800</width>
-			<height>10</height>
-			<label/>
-			<font>font18b</font>
-			<align>right</align>
-			<textcolor>grey</textcolor>
-		</control>
         <control type="group">
         	<posx>20</posx>
         	<posy>200</posy>
@@ -30,7 +23,7 @@ load()
         		<width>1240</width>
         		<height>400</height>
         		<texture border="8">bg.png</texture>
-        		<colordiffuse>60000000</colordiffuse>
+        		<colordiffuse>FF000000</colordiffuse>
         	</control>
 
 			<control type="list" id="100">
@@ -84,7 +77,7 @@ load()
 					<control type="image">
 						<width>250</width>
 						<height>180</height>
-						<texture border="30">btn_action_menu_source_on.png</texture>
+						<texture border="8">btn_focus.png</texture>
 						<visible>Control(100).HasFocus()</visible>
 					</control>
 				</focusedlayout>
@@ -135,6 +128,19 @@ selectWindow()
 				</content>
 			</control>
 		</control>
+
+		<control type="label" id="102"><!-- login name -->
+			<posx>1150</posx>
+			<posy>690</posy>
+			<width>800</width>
+			<height>20</height>
+			<label/>
+			<font>font18b</font>
+			<align>right</align>
+			<aligny>center</aligny>
+			<textcolor>grey</textcolor>
+		</control>
+
         <!-- VERSION -->
         <control type="label">
         	<posx>1230</posx>
@@ -143,7 +149,7 @@ selectWindow()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.6</label>
+        	<label>v0.7</label>
         </control>
 	</controls>
 </window>

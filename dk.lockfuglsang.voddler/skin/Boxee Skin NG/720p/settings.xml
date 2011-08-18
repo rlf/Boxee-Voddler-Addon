@@ -38,7 +38,7 @@ saveSettings()
         		<width>900</width>
         		<height>600</height>
         		<orientation>vertical</orientation>
-        		<itemgap>2</itemgap>
+        		<itemgap>10</itemgap>
         		<onup>-</onup>
         		<ondown>-</ondown>
         		<control type="group" id="1">
@@ -48,14 +48,14 @@ saveSettings()
         				<width>300</width>
         				<posy>25</posy>
         				<label>Movie Player</label>
-        				<font>font22b</font>
+        				<font>font32b</font>
         				<textcolor>grey</textcolor>
         				<aligny>center</aligny>
         			</control>
 					<control type="image">
 						<posx>300</posx>
 						<posy>12</posy>
-    					<width>600</width>
+    					<width>590</width>
         				<height>36</height>
         				<texture border="8">bg.png</texture>
         				<colordiffuse>60000000</colordiffuse>
@@ -77,6 +77,7 @@ saveSettings()
         						<aligny>center</aligny>
         						<align>center</align>
         						<textcolor>grey</textcolor>
+        						<font>font28b</font>
         					</control>
         				</itemlayout>
         				<focusedlayout width="190" height="30">
@@ -94,6 +95,7 @@ saveSettings()
         						<aligny>center</aligny>
         						<align>center</align>
         						<textcolor>white</textcolor>
+        						<font>font28b</font>
         					</control>
         				</focusedlayout>
         				<content type="action">
@@ -116,9 +118,9 @@ saveSettings()
         			</control>
 					<control type="image">
 						<posx>290</posx>
-						<width>620</width>
+						<width>610</width>
 						<height>56</height>
-						<texture border="30">btn_action_menu_source_on.png</texture>
+						<texture border="8">btn_focus.png</texture>
 						<visible>Control.HasFocus(1001)</visible>
 					</control>
         		</control>
@@ -129,14 +131,14 @@ saveSettings()
         				<width>300</width>
         				<posy>25</posy>
         				<label>Movies per Page</label>
-        				<font>font22b</font>
+        				<font>font32b</font>
         				<textcolor>grey</textcolor>
         				<aligny>center</aligny>
         			</control>
 					<control type="image">
 						<posx>300</posx>
 						<posy>12</posy>
-    					<width>600</width>
+    					<width>590</width>
         				<height>36</height>
         				<texture border="8">bg.png</texture>
         				<colordiffuse>60000000</colordiffuse>
@@ -158,6 +160,7 @@ saveSettings()
         						<aligny>center</aligny>
         						<align>center</align>
         						<textcolor>grey</textcolor>
+        						<font>font28b</font>
         					</control>
         				</itemlayout>
         				<focusedlayout width="114" height="30">
@@ -175,6 +178,7 @@ saveSettings()
         						<aligny>center</aligny>
         						<align>center</align>
         						<textcolor>white</textcolor>
+        						<font>font28b</font>
         					</control>
         				</focusedlayout>
         				<content type="action">
@@ -205,9 +209,9 @@ saveSettings()
         			</control>
 					<control type="image">
 						<posx>290</posx>
-						<width>620</width>
+						<width>610</width>
 						<height>56</height>
-						<texture border="30">btn_action_menu_source_on.png</texture>
+						<texture border="8">btn_focus.png</texture>
 						<visible>Control.HasFocus(1002)</visible>
 					</control>
         		</control>

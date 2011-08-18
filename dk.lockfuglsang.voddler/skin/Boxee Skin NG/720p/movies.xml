@@ -16,17 +16,29 @@ Convention:
 from movies import *
 loadPage()
 ]]></onload>
+    <animation type="WindowOpen">
+        <effect type="fade" start="0" end="100" time="200"/>
+    </animation>
     <controls>
         <control type="image">
             <width>1280</width>
             <height>720</height>
             <texture>background.jpg</texture>
+            <!--
+            <texture>debuggrid.png</texture>
+            <colordiffuse>80FFFFFF</colordiffuse>
+             -->
+        </control>
+        <control type="label" id="111"><!-- pagetype -->
+			<posx>30</posx>
+			<posy>660</posy>
+			<angle>60</angle>
+			<textcolor>50606060</textcolor>
+			<font>font80b</font>
+			<label/>
         </control>
         <control type="group" id="1">
         	<visible>False</visible>
-            <animation type="WindowOpen">
-                <effect type="fade" start="0" end="100" time="200"/>
-            </animation>
           	<control type="largeimage" id="401">
            		<width>1280</width>
            		<height>720</height>
@@ -36,33 +48,32 @@ loadPage()
 				<aspectratio>scale</aspectratio>
            	</control>
 
-        	<control type="group"><!-- All controls - is hidden while doing some action -->
-        		<visible>![Control.IsVisible(999) | Control.IsVisible(100)]</visible>
-
+        	<control type="group">
 	            <control type="group"><!-- filter -->
 	            	<posx>10</posx>
-	            	<posy>10</posy>
+	            	<posy>5</posy>
 	            	<width>1260</width>
 	            	<height>100</height>
 	            	<control type="group"><!-- genre -->
 	            		<posx>10</posx>
-	            		<width>1250</width>
+	            		<width>1240</width>
 	            		<height>40</height>
 			            <control type="wraplist" id="201">
 			            	<ondown>203</ondown>
 		                	<onup>503</onup>
-			                <height>40</height>
-			                <width>995</width>
-			                <posx>1</posx>
-			                <posy>3</posy>
+			                <height>50</height>
+			                <width>1240</width>
+			                <posx>0</posx>
+			                <posy>0</posy>
 		               		<scrolltime>200</scrolltime>
 		                	<orientation>horizontal</orientation>
-		                	<itemlayout width="130" height="40">
+		                	<itemlayout width="180" height="40">
 		                    	<control type="label">
-		                    		<posx>75</posx>
-		                        	<width>130</width>
+		                    		<posy>5</posy>
+		                    		<posx>90</posx>
+		                        	<width>180</width>
 		                        	<height>40</height>
-		                        	<font>font20</font>
+		                        	<font>font28</font>
 		                        	<align>center</align>
 		                        	<aligny>center</aligny>
 		                        	<label>$INFO[ListItem.Label]</label>
@@ -70,20 +81,21 @@ loadPage()
 		                        	<colordiffuse>90FFFFFF</colordiffuse>
 		                    	</control>
 		                	</itemlayout>
-		                	<focusedlayout width="150" height="40">
+		                	<focusedlayout width="240" height="40">
 			            		<control type="image">
 			            			<posx>0</posx>
 			            			<posy>7</posy>
-			            			<width>160</width>
-			            			<height>30</height>
+			            			<width>230</width>
+			            			<height>40</height>
 			            			<texture border="8">bg.png</texture>
 			            			<colordiffuse>FF808080</colordiffuse>
 			            		</control>
 		                    	<control type="label">
-		                    		<posx>75</posx>
-		                        	<width>150</width>
+		                    		<posx>110</posx>
+		                        	<width>240</width>
 		                        	<height>40</height>
-		                        	<font>font20b</font>
+		                        	<posy>5</posy>
+		                        	<font>font32b</font>
 		                        	<align>center</align>
 		                        	<aligny>center</aligny>
 		                        	<label>$INFO[ListItem.Label]</label>
@@ -95,68 +107,69 @@ loadPage()
 		                		<onclick lang="python">search(True)</onclick>
 		                	</content>
 		            	</control><!-- list -->
+            			<control type="image">
+                			<visible>Control.HasFocus(201)</visible>
+                			<posy>3</posy>
+                			<width>232</width>
+                			<height>48</height>
+            				<texture border="8">btn_focus.png</texture>
+            			</control>
 		            </control><!-- genre -->
-            		<control type="image"><!-- beats me why these images works how they do?? -->
-                		<visible>Control.HasFocus(201)</visible>
-            			<posx>0</posx>
-            			<posy>0</posy>
-            			<width>180</width>
-            			<height>50</height>
-            			<texture border="25">btn_action_menu_source_on.png</texture>
-            		</control>
 
 
 	            	<control type="group"><!-- sorting -->
-			            <posx>310</posx>
-			            <posy>67</posy>
+			            <posx>230</posx>
+			            <posy>50</posy>
 			            <width>250</width>
 			        	<height>80</height>
 	                	<control type="group"><!-- details about sorting -->
                     		<visible>Control.HasFocus(202)</visible>
                     		<control type="label">
                     			<posx>200</posx>
-                    			<posy>2</posy>
+                    			<posy>0</posy>
                     			<width>250</width>
-                    			<height>30</height>
-                    			<font>font18b</font>
+                    			<height>50</height>
+                    			<font>font26b</font>
                     			<textcolor>grey</textcolor>
                     			<info>Container(202).ListItem.Label</info>
                     			<align>right</align>
+                    			<aligny>center</aligny>
                     		</control>
                     	</control>
-
 	            		<control type="image">
-	            			<posx>205</posx>
+	            			<posx>200</posx>
 	            			<posy>0</posy>
-	            			<width>95</width>
-	            			<height>28</height>
+	            			<width>180</width>
+	            			<height>50</height>
 	            			<texture border="8">bg.png</texture>
 	            			<colordiffuse>A0000000</colordiffuse>
 	            		</control>
 			            <control type="list" id="202">
 			            	<ondown>200</ondown>
 		                	<onup>203</onup>
+
 			                <posx>210</posx>
-			                <posy>5</posy>
-			                <width>90</width>
-			                <height>18</height>
+			                <posy>8</posy>
+
+			                <width>162</width>
+			                <height>36</height>
 		               		<scrolltime>200</scrolltime>
 		                	<orientation>horizontal</orientation>
-		                	<itemlayout width="30" height="18">
+		                	<itemlayout width="54" height="36">
 		                    	<control type="image">
 		                        	<posx>0</posx>
-		                        	<width>26</width>
-		                        	<height>18</height>
+		                        	<width>52</width>
+		                        	<height>36</height>
 		                        	<info>ListItem.Icon</info>
 		                        	<aspectratio>keep</aspectratio>
 		                        	<colordiffuse>80909090</colordiffuse>
 		                    	</control>
 		                	</itemlayout>
-		                	<focusedlayout width="30" height="18">
+		                	<focusedlayout width="54" height="36">
 		                    	<control type="image">
 		                        	<posx>0</posx>
-		                        	<width>26</width>
-		                        	<height>18</height>
+		                        	<width>52</width>
+		                        	<height>36</height>
 		                        	<info>ListItem.Icon</info>
 		                        	<aspectratio>keep</aspectratio>
 		                    	</control>
@@ -165,68 +178,68 @@ loadPage()
 		                		<onclick lang="python">search(True)</onclick>
 		                	</content>
 		            	</control><!-- list -->
+            			<control type="image"><!-- beats me why these images works how they do?? -->
+                			<visible>Control.HasFocus(202)</visible>
+                			<posy>0</posy>
+                			<posx>30</posx>
+                			<width>350</width>
+                			<height>54</height>
+            				<texture border="8">btn_focus.png</texture>
+            			</control>
 		            </control><!-- sorting -->
-            		<control type="image"><!-- beats me why these images works how they do?? -->
-                		<visible>Control.HasFocus(202)</visible>
-            			<posx>380</posx>
-            			<posy>56</posy>
-            			<width>240</width>
-            			<height>50</height>
-            			<texture border="30">btn_action_menu_source_on.png</texture>
-            		</control>
 
 	            	<control type="group"><!-- type: all, free, premium -->
 	            		<posx>10</posx>
-	            		<posy>43</posy>
+	            		<posy>45</posy>
 	            		<width>180</width>
 	            		<control type="image">
-	            			<posx>0</posx>
-	            			<posy>0</posy>
-	            			<width>180</width>
+	            			<posx>3</posx>
+	            			<posy>5</posy>
+	            			<width>240</width>
 	            			<height>30</height>
 	            			<texture border="8">bg.png</texture>
-	            			<colordiffuse>A0000000</colordiffuse>
+	            			<colordiffuse>D0000000</colordiffuse>
 	            		</control>
 
 			            <control type="list" id="203">
 			            	<ondown>202</ondown>
 		                	<onup>201</onup>
-			                <posx>0</posx>
-			                <posy>0</posy>
+			                <posx>3</posx>
+			                <posy>5</posy>
 			                <height>40</height>
-			                <width>180</width>
+			                <width>240</width>
 		               		<scrolltime>200</scrolltime>
 		                	<orientation>horizontal</orientation>
-		                	<itemlayout width="60" height="30">
+		                	<itemlayout width="80" height="30">
 		                    	<control type="label">
-		                        	<posx>30</posx>
+		                        	<posx>40</posx>
 		                        	<posy>0</posy>
 		                        	<width>60</width>
 		                        	<height>30</height>
-		                        	<font>font18b</font>
-		                        	<aligny>center</aligny>
+		                        	<font>font20b</font>
 		                        	<align>center</align>
+		                        	<aligny>center</aligny>
 		                        	<info>ListItem.Label</info>
 		                        	<textcolor>grey</textcolor>
 		                    	</control>
 		                	</itemlayout>
-		                	<focusedlayout width="60" height="30">
+		                	<focusedlayout width="80" height="30">
 			            		<control type="image">
 			            			<posx>0</posx>
 			            			<posy>0</posy>
-			            			<width>60</width>
+			            			<width>80</width>
 			            			<height>30</height>
 			            			<texture border="8">bg.png</texture>
 			            			<colordiffuse>FF808080</colordiffuse>
 			            		</control>
 		                    	<control type="label">
-		                        	<posx>30</posx>
+		                        	<posx>40</posx>
 		                        	<posy>0</posy>
-		                        	<width>60</width>
+		                        	<width>80</width>
 		                        	<height>30</height>
-		                        	<font>font18b</font>
-		                        	<aligny>center</aligny>
+		                        	<font>font20b</font>
 		                        	<align>center</align>
+		                        	<aligny>center</aligny>
 		                        	<info>ListItem.Label</info>
 		                        	<textcolor>white</textcolor>
 		                    	</control>
@@ -236,28 +249,16 @@ loadPage()
 		                		<onclick lang="python">search(True)</onclick>
 		                	</content>
 		            	</control><!-- list -->
+		        		<control type="image">
+		            		<visible>Control.HasFocus(203)</visible>
+		        			<posx>0</posx>
+		        			<posy>0</posy>
+		        			<width>245</width>
+		        			<height>40</height>
+		        			<texture border="8">btn_focus.png</texture>
+		        		</control>
 		            </control><!-- category -->
-	        		<control type="image"><!-- beats me why these images works how they do?? -->
-	            		<visible>Control.HasFocus(203)</visible>
-	        			<posx>0</posx>
-	        			<posy>32</posy>
-	        			<width>198</width>
-	        			<height>52</height>
-	        			<texture border="30">btn_action_menu_source_on.png</texture>
-	        		</control>
-
 	            </control><!-- filter -->
-
-				<control type="label" id="102"><!-- login name -->
-					<posx>1260</posx>
-					<posy>5</posy>
-					<width>800</width>
-					<height>10</height>
-					<label/>
-					<font>font18b</font>
-					<align>right</align>
-					<textcolor>grey</textcolor>
-				</control>
 
 		        <control type="label" id="120"><!-- search results -->
 		        	<visible>!Control.HasFocus(202)</visible>
@@ -344,7 +345,7 @@ prevPage()
 ]]></onprev>
 	                <posx>10</posx>
 	                <posy>10</posy>
-	                <width>620</width>
+	                <width>622</width>
 	                <height>565</height>
 	           		<scrolltime>200</scrolltime>
 	            	<orientation>vertical</orientation>
@@ -359,6 +360,16 @@ prevPage()
 	            			<colordiffuse>6080FF80</colordiffuse>
 	            			<fadetime>200</fadetime>
 	            			<texture border="8">item_bg.png</texture>
+	            		</control>
+	            		<control type="label">
+	            			<posy>5</posy>
+	            			<posx>585</posx>
+	            			<width>36</width>
+	            			<height>12</height>
+	            			<font>font12b</font>
+	            			<label>#$INFO[ListItem.property(custom:ix)]</label>
+	            			<textcolor>A0606060</textcolor>
+	            			<align>right</align>
 	            		</control>
 	            		<control type="group">
 		            		<posx>40</posx>
@@ -455,7 +466,7 @@ prevPage()
 	                	</control>
 	            	</itemlayout>
 
-	            	<focusedlayout width="620" height="130">
+	            	<focusedlayout width="622" height="130">
 	            		<control type="image">
 	            			<posx>0</posx>
 	            			<posy>0</posy>
@@ -466,8 +477,8 @@ prevPage()
 	            			<texture border="8">bg.png</texture>
 	            		</control>
 	            		<control type="label">
-	            			<posy>2</posy>
-	            			<posx>615</posx>
+	            			<posy>12</posy>
+	            			<posx>605</posx>
 	            			<width>36</width>
 	            			<height>12</height>
 	            			<font>font12b</font>
@@ -496,7 +507,7 @@ prevPage()
 			                    	<font>font23b</font>
 			                    	<aligny>left</aligny>
 			                    	<info>ListItem.Label</info>
-			                    	<textcolor>yellow</textcolor>
+			                    	<textcolor>white</textcolor>
 			                    	<scroll>true</scroll>
 			                	</control>
 			            		<control type="group"><!-- unfortunately progress is not very good atm. -->
@@ -580,6 +591,18 @@ prevPage()
 			                	</control>
 		                	</control>
 	                	</control>
+	                	<control type="image">
+	                		<visible>!Control.HasFocus(200)</visible>
+	                		<width>620</width>
+	                		<height>130</height>
+	                		<texture border="8">btn.png</texture>
+	                	</control>
+	                	<control type="image">
+	                		<visible>Control.HasFocus(200)</visible>
+	                		<width>622</width>
+	                		<height>130</height>
+	                		<texture border="8">btn_focus.png</texture>
+	                	</control>
 	            	</focusedlayout>
 	            	<content type="action">
 	            		<onclick lang="python"><![CDATA[
@@ -601,48 +624,17 @@ selectMovie()
         	<label/>
         </control>
 
-        <control type="group"><!-- status -->
-        	<!-- 1280/2=640, 720/2=360 -->
-        	<posx>430</posx>
-        	<posy>20</posy>
-        	<width>420</width>
-        	<height>80</height>
-			<visible>Control.IsVisible(100)</visible>
-        	<control type="image">
-        		<width>420</width>
-        		<height>80</height>
-        		<texture border="8">bg.png</texture>
-        		<colordiffuse>FF202020</colordiffuse>
-        	</control>
-        	<control type="label" id="100"><!-- STATUS -->
-        		<posx>10</posx>
-        		<posy>5</posy>
-        		<width>400</width>
-        		<height>70</height>
-        		<font>font24b</font>
-        		<textcolor>white</textcolor>
-        		<label></label>
-        		<wrapmultiline>true</wrapmultiline>
-        		<visible>false</visible>
-        		<align>center</align>
-        	</control>
-        	<control type="image">
-        		<posx>130</posx>
-        		<posy>45</posy>
-        		<width>160</width>
-        		<height>32</height>
-        		<texture>stars_empty.png</texture>
-        		<visible>Control.IsVisible(600)</visible>
-        	</control>
-        	<control type="image" id="600">
-        		<posx>130</posx>
-        		<posy>45</posy>
-        		<width>160</width>
-        		<height>32</height>
-        		<texture>stars_00.png</texture>
-        		<visible>false</visible>
-        	</control>
-        </control>
+		<control type="label" id="102"><!-- login name -->
+			<posx>1150</posx>
+			<posy>690</posy>
+			<width>800</width>
+			<height>20</height>
+			<label/>
+			<font>font18b</font>
+			<align>right</align>
+			<aligny>center</aligny>
+			<textcolor>grey</textcolor>
+		</control>
 
         <!-- VERSION -->
         <control type="label">
@@ -652,7 +644,8 @@ selectMovie()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.6</label>
+			<aligny>center</aligny>
+        	<label>v0.7</label>
         </control>
 
     </controls>

@@ -17,6 +17,7 @@ import voddlerapi
 # IDs
 WINDOW_ID=14000
 USERNAME_LBL_ID=102
+PAGETYPE_LBL_ID=111
 
 MOVIES_ID=200
 
@@ -39,6 +40,10 @@ lastPage = 0
 maxPage = 0
 maxCount = 0
 lastSearch = 0
+
+oldPageType = None
+pageType = None
+
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
@@ -83,7 +88,7 @@ def search(reset=False):
             items = pageCache[currentPage]
         else:
             status("Fetching page %i" % (currentPage+1))
-            data = voddlerapi.searchVoddler('movie', c, g, s, offset, pageSize)
+            data = voddlerapi.searchVoddler(pageType, c, g, s, offset, pageSize)
             maxCount = int(data[u'data'][u'count'])
             maxPage = (maxCount-1) / pageSize
             if maxPage < 0:
@@ -214,7 +219,7 @@ def showMovieOnListItem(item, movie, index):
 # Populate Controls
 # -----------------------------------------------------------------------------
 def populateGenre():
-    data = voddlerapi.getGenres('movie')
+    data = voddlerapi.getGenres(pageType)
     #pprint(data)
     items = mc.ListItems()
     global genreCache
@@ -284,13 +289,14 @@ def populateControls():
 # -----------------------------------------------------------------------------
 listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
 def restoreUserSettings():
+    global pageSize
     print "restoring user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
 
     numPages = config.GetValue('pages')
     if numPages:
-        pageSize = numPages
+        pageSize = int(numPages)
     for key, id in listFields.items():
         value = config.GetValue(key)
         print "restoring %s as %s" % (key, value)
@@ -335,18 +341,28 @@ def getCategory():
     return _getListItemValue(CATEGORY_ID)
 
 def loadPage():
-    global pageCache, currentPage, maxPage
+    global pageCache, currentPage, maxPage, pageType, oldPageType
     mc.GetActiveWindow().GetControl(1).SetVisible(False)
     mc.ShowDialogWait()
+    pageType = mc.GetApp().GetLocalConfig().GetValue('pageType')
+    if not pageType:
+        pageType = 'movie'
+    if oldPageType != pageType:
+        pageCache = {} # force refresh
+    oldPageType = pageType
+    pagetypes = {'movie' : 'Movies', 'episode' : 'TVSeries', 'documentary' : 'Documentaries'}
+    mc.GetActiveWindow().GetLabel(PAGETYPE_LBL_ID).SetLabel(pagetypes[pageType])
     if not pageCache:
         populateControls()
         restoreUserSettings()
         search(True)
     else:
+        # restore dynamic labels
         window = mc.GetActiveWindow()
         window.GetLabel(PAGE_LABEL).SetLabel("Page %i of %i" % (currentPage+1, maxPage+1))
         offset = currentPage * pageSize
         window.GetLabel(STATUS_LABEL).SetLabel("showing %i-%i of %i" % (offset+1, offset+len(pageCache[currentPage]), maxCount))
+        window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
     hideWaitDialog()
     mc.GetActiveWindow().GetControl(1).SetVisible(True)
 

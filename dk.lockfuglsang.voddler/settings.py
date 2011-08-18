@@ -16,19 +16,17 @@ def loadPage():
             if item.GetPath() == value:
                 list.SetFocusedItem(index)
                 break
-    print "settings loaded"
 
 def saveSettings():
-    print "saving settings"
     window = mc.GetActiveWindow()
     config = mc.GetApp().GetLocalConfig()
     for key, listid in CONFIG.items():
         try:
             list = window.GetList(listid)
             value = list.GetItem(list.GetFocusedItem()).GetPath()
-            print "saving %s : %s" % (key, value)
             config.SetValue(key, value)
+            mc.ShowDialogNotification("Settings saved")
         except:
-            print "error saving"
+            print "Settings not saved - dialog was closed too fast"
 
 

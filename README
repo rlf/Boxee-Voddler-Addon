@@ -26,6 +26,9 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.7
+* Support for TVSeries (preliminary), Documentaries
+
 v0.6
 * Introduced main-screen
 * Settings menu (movies per page, player)

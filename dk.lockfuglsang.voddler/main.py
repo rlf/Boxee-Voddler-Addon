@@ -20,8 +20,11 @@ def selectWindow():
     items = list.GetItems()
     item = items[list.GetFocusedItem()]
     label = item.GetLabel()
-    windows = {'Movies' : 14000, 'Settings' : 14009}
+    windows = {'Movies' : 14000, 'TVSeries' : 14000, 'Documentaries' : 14000, 'Settings' : 14009}
+    pagetype = {'Movies' : 'movie', 'TVSeries' : 'episode', 'Documentaries' : 'documentary'}
     if label in windows:
+        if label in pagetype:
+            mc.GetApp().GetLocalConfig().SetValue('pageType', pagetype[label])
         mc.ActivateWindow(windows[label])
     elif label == 'Logout':
         login.logout()
@@ -29,3 +32,5 @@ def selectWindow():
     else:
         print "No window defined yet for %s" % label
 
+if __name__ == '__main__':
+    mc.ActivateWindow(14001)
