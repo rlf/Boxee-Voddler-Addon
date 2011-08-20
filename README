@@ -6,8 +6,11 @@ BACKLOG
 =======
 Tasks
 -----
-* Playback of trailers
-* Add to voddler-list
+* Playback of trailers (D34dmeat has done this, need to be merged)
+* Introduce includes (so we don't need to duplicate i.e. version + login label on all screens).
+* Add/remove for favorites and playlist
+* History view as well?
+* Better episode filtering + navigation of tvseries-seasons-episodes
 
 Epics
 -----
@@ -26,6 +29,12 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.8
+* Major refactoring (introduced some OOP :D)
+* Basic support for all screens on main (only read access to playlists)
+* Improved L&F to work on both BB and PC (still struggling with edit-fields on BB).
+* Reused main movies.xml for all movie-related displays.
+
 v0.7
 * Support for TVSeries (preliminary), Documentaries
 

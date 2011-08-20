@@ -41,10 +41,14 @@ unloadLogin()
 	        		<label>Username</label>
 	        		<font>font32b</font>
 	        		<textcolor>white</textcolor>
+	        		<focusedcolor>white</focusedcolor>
+	        		<disabledcolor>grey</disabledcolor>
+
 	        		<textoffsetx>15</textoffsetx>
 	        		<textoffsety>30</textoffsety>
 	        		<align>center</align>
 	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <texturenofocus>-</texturenofocus>
 	                <ontextchange lang="python">textChanged()</ontextchange>
 	        	</control>
 	        	<control type="edit" id="502">
@@ -58,10 +62,13 @@ unloadLogin()
 	        		<password>true</password>
 	        		<font>font32b</font>
 	        		<textcolor>white</textcolor>
+	        		<focusedcolor>white</focusedcolor>
+	        		<disabledcolor>grey</disabledcolor>
 	        		<textoffsetx>15</textoffsetx>
 	        		<textoffsety>30</textoffsety>
 	        		<align>center</align>
 	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <texturenofocus>-</texturenofocus>
 	                <ontextchange lang="python">textChanged()</ontextchange>
 	        	</control>
 	        	<control type="button" id="700">

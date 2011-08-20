@@ -29,7 +29,6 @@ STATUS_LABEL=120
 
 # Constants
 pageSize=100
-PLATFORMS = ['iphone', 'web', 'android', 'symbian']
 TIME_BETWEEN_SEARCHES = 3 # at least 3 seconds between searches - makes sure that we don't accidentially skip pages
 
 # Global vars
@@ -42,7 +41,7 @@ maxCount = 0
 lastSearch = 0
 
 oldPageType = None
-pageType = None
+pageType = 'movie'
 
 # -----------------------------------------------------------------------------
 # Actions
@@ -55,7 +54,8 @@ def selectMovie(listId=200):
     ShowDialogWait()
     status("Playing movie %s" % movie.GetLabel())
     try:
-        url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
+        player = mc.GetApp().GetLocalConfig().GetValue('player')
+        url = voddlerapi.getAPI().getMovieURL(movie.GetProperty('id'), player)
         hideWaitDialog()
         if not url:
             url = movie.GetProperty('url')
@@ -67,6 +67,7 @@ def selectMovie(listId=200):
 
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch
+    api = voddlerapi.getAPI()
     ShowDialogWait()
     status("Searching...")
     saveUserSettings()
@@ -88,16 +89,15 @@ def search(reset=False):
             items = pageCache[currentPage]
         else:
             status("Fetching page %i" % (currentPage+1))
-            data = voddlerapi.searchVoddler(pageType, c, g, s, offset, pageSize)
-            maxCount = int(data[u'data'][u'count'])
+            maxCount, data = api.search(pageType, c, g, s, offset, pageSize)
             maxPage = (maxCount-1) / pageSize
             if maxPage < 0:
                 maxPage = 0
             itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
-            for index, movie in enumerate(data[u'data'][u'videos']):
-                status("Genrating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+            for index, movie in enumerate(data):
+                status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
                 item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
-                showMovieOnListItem(item, movie, index + offset)
+                movie.showOnListItem(item, index)
                 items.append(item)
             pageCache[currentPage] = items
 
@@ -150,86 +150,21 @@ def prevPage():
     list = GetWindow(WINDOW_ID).GetList(MOVIES_ID)
     list.SetFocusedItem(len(list.GetItems())-1)
 
-def showMovieOnListItem(item, movie, index):
-    title = movie[u'originalTitle'].encode('utf-8', 'xmlcharrefreplace')
-    description = movie[u'localizedData'][u'synopsis'].encode('utf-8', 'xmlcharrefreplace')
-    iconUrl = movie[u'posterUrl'].encode('ascii', 'xmlcharrefreplace')
-    screenShots = movie[u'screenshots']
-    movieUrl = movie[u'url'].encode('ascii', 'error')
-    duration = movie[u'runtime'] * 60
-    durationHour = movie[u'runtime'] / 60
-    durationMinute = movie[u'runtime'] % 60
-    durationFormatted = "%ih %imin" % (durationHour, durationMinute)
-    if durationHour == 0:
-        durationFormatted = "%imin" % durationMinute
-
-    rating = movie[u'videoRatingAverage']
-    releaseYear = movie[u'productionYear']
-    if not releaseYear:
-        releaseYear = '-'
-
-    item.SetDuration(duration)
-    item.SetLabel(title)
-    item.SetProperty('id', movie[u'id'].encode('ascii'))
-    item.SetProperty('genres', getGenres(movie[u'genres']))
-    item.SetProperty("details", "%s | %s" % (releaseYear, durationFormatted))
-    item.SetDescription(description, True)
-    item.SetThumbnail(iconUrl)
-    item.SetIcon(iconUrl)
-    item.SetProperty('poster', iconUrl)
-    item.SetPath(movieUrl)
-    item.SetProperty('url', movieUrl)
-    item.SetContentType('text/html')
-    item.SetStarRating(rating)
-    item.SetProperty('rating', "%02i" % (math.floor(rating * 20) / 2))
-    castList = []
-    for cast in movie[u'castMembers']:
-        role = cast[u'role'].encode('utf-8', 'xmlcharrefreplace')
-        name = cast[u'name'].encode('utf-8', 'xmlcharrefreplace')
-        item.AddCastAndRole(name, role)
-        castList.append(name)
-
-    item.SetProperty('cast', string.join(castList, ', '))
-    for platform in PLATFORMS:
-        item.SetProperty('on_%s' % platform, 'false')
-    for platform in movie[u'platforms']:
-        item.SetProperty('on_%s' % platform.encode('ascii'), 'true')
-
-    if movie[u'trailer']:
-        url = movie[u'trailer'].encode('ascii')
-        item.AddAlternativePath('Trailer', url, 'video/mp4', iconUrl)
-        item.SetPath(url)
-        item.SetContentType('video/mp4')
-        item.SetProperty('hasTrailer', 'true')
-
-    if movie[u'trailerLowRes']:
-        item.AddAlternativePath('Trailer LowRes', movie[u'trailerLowRes'].encode('ascii'), 'video/mp4', iconUrl)
-        item.SetProperty('hasTrailer', 'true')
-
-    cnt = 0
-    for shot in screenShots:
-        url = shot[u'url'].encode('ascii')
-        item.SetImage(cnt, url)
-        item.SetProperty('image%i' % cnt, url)
-        cnt += 1
-
-    item.SetProperty('ix', "%i" % (index+1))
-
 # -----------------------------------------------------------------------------
 # Populate Controls
 # -----------------------------------------------------------------------------
 def populateGenre():
-    data = voddlerapi.getGenres(pageType)
+    genres = voddlerapi.getAPI().getGenres(pageType)
     #pprint(data)
     items = mc.ListItems()
     global genreCache
     genreCache = {}
-    for g in data[u'data']:
+    for value, name in genres.items():
         #pprint(g)
         item = ListItem(ListItem.MEDIA_UNKNOWN)
-        item.SetLabel(str(g[u'name']))
-        item.SetProperty('value', str(g[u'value']))
-        genreCache[g[u'value']] = item
+        item.SetLabel(name)
+        item.SetProperty('value', value)
+        genreCache[value] = item
         items.append(item)
     genre = mc.GetActiveWindow().GetList(GENRE_ID)
     genre.SetItems(items)
@@ -265,15 +200,12 @@ def populateLists():
     item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
     items.append(item)
     list.SetItems(items)
-    list.SetVisible(False)
 
 def populateControls():
     # Initialize UI
     ShowDialogWait()
     try:
         window = GetActiveWindow()
-        for id in [GENRE_ID, SORTING_ID, CATEGORY_ID]:
-            window.GetList(id).SetVisible(False)
         if login.getLoggedIn():
             window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
         populateSorting()
@@ -289,7 +221,7 @@ def populateControls():
 # -----------------------------------------------------------------------------
 listFields = {'genre' : 201, 'sorting' : 202, 'type' : 203}
 def restoreUserSettings():
-    global pageSize
+    global pageSize, pageType, oldPageType
     print "restoring user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
@@ -297,6 +229,8 @@ def restoreUserSettings():
     numPages = config.GetValue('pages')
     if numPages:
         pageSize = int(numPages)
+    if pageType != oldPageType:
+        return
     for key, id in listFields.items():
         value = config.GetValue(key)
         print "restoring %s as %s" % (key, value)
@@ -317,8 +251,8 @@ def saveUserSettings():
 # -----------------------------------------------------------------------------
 def getGenres(genres):
     global genreCache
-    if not genreCache:
-        raise "genreCache not initialized!"
+    if not globals().has_key('genreCache'):
+        return string.capwords(string.join(genres, ', ').encode('utf-8', 'xmlcharreplace'), ', ')
     genre = []
     for g in genres:
         if g in genreCache:
@@ -349,7 +283,6 @@ def loadPage():
         pageType = 'movie'
     if oldPageType != pageType:
         pageCache = {} # force refresh
-    oldPageType = pageType
     pagetypes = {'movie' : 'Movies', 'episode' : 'TVSeries', 'documentary' : 'Documentaries'}
     mc.GetActiveWindow().GetLabel(PAGETYPE_LBL_ID).SetLabel(pagetypes[pageType])
     if not pageCache:
@@ -363,6 +296,7 @@ def loadPage():
         offset = currentPage * pageSize
         window.GetLabel(STATUS_LABEL).SetLabel("showing %i-%i of %i" % (offset+1, offset+len(pageCache[currentPage]), maxCount))
         window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
+    oldPageType = pageType
     hideWaitDialog()
     mc.GetActiveWindow().GetControl(1).SetVisible(True)
 

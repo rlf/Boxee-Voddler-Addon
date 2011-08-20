@@ -127,30 +127,13 @@ def getSessionId():
         return sessionId
     status("Logging in as %s" % username)
     try:
-        data = voddlerapi.login(username, password)
-        pprint(data)
-        if data[u'success']:
-            sessionId = data[u'data'][u'session'].encode('ascii')
+        sessionId = voddlerapi.getAPI().login(username, password)
+        if sessionId:
             sessionTimestamp = time.time()
             status("Successfully logged in as %s" % username)
         else:
-            sessionId = None
             error("Error authenticating %s[CR][CR]%s" % (username, data[u'message']))
     except urllib2.HTTPError, e:
         sessionId = None
         error("Error authenticating %s[CR][CR]%s" % (username, e))
     return sessionId
-
-def getTokenId():
-    status("Retrieving token");
-    sessionId = getSessionId()
-    if not sessionId:
-        return None
-    data = voddlerapi.getToken(sessionId)
-    pprint(data)
-    if data[u'success']:
-        return data[u'data'][u'token'].encode('ascii')
-    else:
-        sessionId = None
-        error("Error retrieving token: %s" % data[u'message'].encode('ascii'))
-    return None
