@@ -11,43 +11,22 @@ import time
 from pprint import pprint
 
 import login
-<<<<<<< HEAD
-
-# IDs
-WINDOW_ID=14000
-STATUS_ID=100
-PROGRESS_ID=600
-=======
 from status import *
 import voddlerapi
 
 # IDs
 WINDOW_ID=14000
->>>>>>> upstream/master
 USERNAME_LBL_ID=102
 PAGETYPE_LBL_ID=111
 
 MOVIES_ID=200
 
-<<<<<<< HEAD
-MOVIES_ID=200
-
-GENRE_ID=201
-SORTING_ID=202
-CATEGORY_ID=203
-
-# URLs
-BASE_URL = "http://api.voddler.com/metaapi/"
-SEARCH_URL = BASE_URL + "browse/1?type=movie&category=%s&genre=%s&sort=%s&offset=%i&count=%s"
-PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
-PLAYER2_URL = "http://player.voddler.com/VoddlerPlayer.swf?vnettoken=%s&videoId=%s"
-=======
 GENRE_ID=201
 SORTING_ID=202
 CATEGORY_ID=203
 PAGE_LABEL=110
 STATUS_LABEL=120
->>>>>>> upstream/master
+TRAILER_WINDOW=14025
 
 # Constants
 pageSize=100
@@ -62,13 +41,10 @@ lastPage = 0
 maxPage = 0
 maxCount = 0
 lastSearch = 0
-<<<<<<< HEAD
-=======
 
 oldPageType = None
 pageType = None
 
->>>>>>> upstream/master
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
@@ -78,17 +54,46 @@ def selectMovie(listId=200):
     movie = movieList.GetItem(index)
     # change Path to point to the relevant movieUrl
     ShowDialogWait()
-    status("Playing movie %s" % movie.GetLabel())
-    try:
-        url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
-        hideWaitDialog()
-        if not url:
-            url = movie.GetProperty('url')
-        print "Playing %s" % url
-        movie.SetPath(url)
-        GetPlayer().PlayWithActionMenu(movie)
-    finally:
-        hideWaitDialog()
+    first = movie.GetProperty('url')
+    second = movie.GetProperty('loresTrailer')
+    selection = mc.ShowDialogSelect("Please Choose", ["Play Trailer" , "Play Movie"])
+    if selection == 0:
+		launchTrailer()
+		
+    else:
+        status("Playing movie %s" % movie.GetLabel())
+        try:
+            url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
+            hideWaitDialog()
+            if not url:
+                            url = movie.GetProperty('url')
+            print "Playing %s" % url
+            movie.SetPath(url)
+            GetPlayer().PlayWithActionMenu(movie)
+        finally:
+            hideWaitDialog()
+
+def launchTrailer():
+    listId=200
+    movieList = GetActiveWindow().GetList(listId)
+    index = movieList.GetFocusedItem()
+    movieitem = movieList.GetItem(index)
+    trailer = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+    trailer.SetLabel("%s Trailer" % movieitem.GetLabel())
+    trailerPath = movieitem.GetProperty('loresTrailer')
+    trailer.SetPath(trailerPath)
+    ActivateWindow(TRAILER_WINDOW)
+    GetPlayer().PlayInBackground(trailer)
+	
+def loadTrailers():
+    window = GetWindow(TRAILER_WINDOW)
+	
+def exitTrailer():
+    GetPlayer().Stop()
+    xbmc.executebuiltin('Dialog.Close(%s)' % TRAILER_WINDOW)
+    mc.CloseWindow(TRAILER_WINDOW)
+	
+	
 
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch
@@ -97,11 +102,7 @@ def search(reset=False):
     saveUserSettings()
     window = GetWindow(WINDOW_ID)
     mainList = window.GetList(MOVIES_ID)
-<<<<<<< HEAD
-    statusLabel = window.GetLabel(120)
-=======
     statusLabel = window.GetLabel(STATUS_LABEL)
->>>>>>> upstream/master
     statusLabel.SetVisible(False)
     if reset:
         currentPage = 0
@@ -234,6 +235,7 @@ def showMovieOnListItem(item, movie, index):
     if movie[u'trailerLowRes']:
         item.AddAlternativePath('Trailer LowRes', movie[u'trailerLowRes'].encode('ascii'), 'video/mp4', iconUrl)
         item.SetProperty('hasTrailer', 'true')
+        item.SetProperty('loresTrailer', movie[u'trailerLowRes'].encode('ascii'))
 
     cnt = 0
     for shot in screenShots:
@@ -323,17 +325,9 @@ def restoreUserSettings():
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
 
-<<<<<<< HEAD
-#    for key, id in editFields.items():
-#        value = config.GetValue(key)
-#        if not value is None:
-#            GetWindow(LOGIN_ID).GetEdit(id).SetText(value)
-
-=======
     numPages = config.GetValue('pages')
     if numPages:
         pageSize = int(numPages)
->>>>>>> upstream/master
     for key, id in listFields.items():
         value = config.GetValue(key)
         print "restoring %s as %s" % (key, value)
@@ -345,12 +339,6 @@ def saveUserSettings():
     print "saving user-settings"
     window = GetWindow(WINDOW_ID)
     config = GetApp().GetLocalConfig()
-<<<<<<< HEAD
-#    for key, id in editFields.items():
-#        value = GetWindow(LOGIN_ID).GetEdit(id).GetText()
-#        config.SetValue(key, value)
-=======
->>>>>>> upstream/master
     for key, id in listFields.items():
         value = window.GetList(id).GetFocusedItem()
         config.SetValue(key, "%i" % value)
@@ -383,20 +371,6 @@ def getSorting():
 def getCategory():
     return _getListItemValue(CATEGORY_ID)
 
-<<<<<<< HEAD
-def getURL(url, postData=None):
-    f = urllib2.urlopen(url, postData)
-    data = f.read()
-    print url + ":\n" + data
-    return data
-
-def loadPage():
-    mc.GetActiveWindow().GetControl(1).SetVisible(False)
-    mc.ShowDialogWait()
-    populateControls()
-    restoreUserSettings()
-    search(True)
-=======
 def loadPage():
     global pageCache, currentPage, maxPage, pageType, oldPageType
     mc.GetActiveWindow().GetControl(1).SetVisible(False)
@@ -420,7 +394,6 @@ def loadPage():
         offset = currentPage * pageSize
         window.GetLabel(STATUS_LABEL).SetLabel("showing %i-%i of %i" % (offset+1, offset+len(pageCache[currentPage]), maxCount))
         window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
->>>>>>> upstream/master
     hideWaitDialog()
     mc.GetActiveWindow().GetControl(1).SetVisible(True)
 
