@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <window type="window" id="14001">
+<<<<<<< HEAD
+	<default always="true">100</default>
+=======
 	<defaultcontrol always="true">100</defaultcontrol>
+>>>>>>> upstream/master
 	<allowoverlay>yes</allowoverlay>
 	<onload lang="python"><![CDATA[
 from main import *
@@ -16,6 +20,16 @@ load()
             <texture>debuggrid.png</texture>
              -->
         </control>
+		<control type="label" id="102"><!-- login name -->
+			<posx>1260</posx>
+			<posy>5</posy>
+			<width>800</width>
+			<height>10</height>
+			<label/>
+			<font>font18b</font>
+			<align>right</align>
+			<textcolor>grey</textcolor>
+		</control>
         <control type="group">
         	<posx>20</posx>
         	<posy>200</posy>
@@ -23,6 +37,10 @@ load()
         		<width>1240</width>
         		<height>400</height>
         		<texture border="8">bg.png</texture>
+<<<<<<< HEAD
+        		<colordiffuse>60000000</colordiffuse>
+        	</control>
+=======
         		<colordiffuse>FF000000</colordiffuse>
         	</control>
 
@@ -140,7 +158,124 @@ selectWindow()
 			<aligny>center</aligny>
 			<textcolor>grey</textcolor>
 		</control>
+>>>>>>> upstream/master
 
+			<control type="list" id="100">
+				<posx>15</posx>
+				<posy>20</posy>
+				<width>1260</width>
+				<height>600</height>
+				<orientation>horizontal</orientation>
+				<itemlayout width="240" height="120">
+					<control type="image">
+						<posx>80</posx>
+						<posy>20</posy>
+						<width>93</width>
+						<height>72</height>
+						<info>ListItem.Icon</info>
+						<align>center</align>
+						<colordiffuse>60FFFFFF</colordiffuse>
+					</control>
+					<control type="label">
+						<posx>120</posx>
+						<posy>120</posy>
+						<width>240</width>
+						<height>20</height>
+						<info>ListItem.Label</info>
+						<font>font24b</font>
+						<align>center</align>
+						<textcolor>grey</textcolor>
+					</control>
+				</itemlayout>
+				<focusedlayout width="240" height="120">
+					<control type="image">
+						<width>250</width>
+						<height>180</height>
+						<texture border="30">button_action_menu_source_on.png</texture>
+						<visible>Control(100).HasFocus()</visible>
+					</control>
+					<control type="image">
+						<posx>80</posx>
+						<posy>20</posy>
+						<width>93</width>
+						<height>72</height>
+						<info>ListItem.Icon</info>
+						<align>center</align>
+					</control>
+					<control type="label">
+						<posx>120</posx>
+						<posy>120</posy>
+						<width>240</width>
+						<height>20</height>
+						<info>ListItem.Label</info>
+						<font>font24b</font>
+						<textcolor>white</textcolor>
+						<align>center</align>
+					</control>
+				</focusedlayout>
+				<content type="action">
+					<onclick lang="python"><![CDATA[
+					from main import *
+					selectWindow()
+					]]></onclick>
+					<item id="350">
+						<label>Movies</label>
+						<thumb>movies.png</thumb>
+						<label2>Allows you to browse the movie-catalog of Voddler</label2>
+						<onclick>
+							<![CDATA[]]>
+							ActivateWindow(14000)
+						</onclick>
+						<onleft>SetFocus(356)</onleft>
+						<onright>SetFocus(351)</onright>
+					</item>
+					<item id="351">
+						<label>TVSeries</label>
+						<thumb>series.png</thumb>
+						<label2>Browse TVSeries of the Voddler-catalog</label2>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(350)</onleft>
+						<onright>SetFocus(352)</onright>
+					</item>
+					<item id="352">
+						<label>Documentaries</label>
+						<thumb>documentaries.png</thumb>
+						<label2>See Documentaries from the Voddler-catalog</label2>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(351)</onleft>
+						<onright>SetFocus(353)</onright>
+					</item>
+					<item id="353">
+						<label>Favorites</label>
+						<thumb>favorites.png</thumb>
+						<label2>Play and manage your favorites</label2>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(352)</onleft>
+						<onright>SetFocus(354)</onright>
+					</item>
+					<item id="354">
+						<label>Playlist</label>
+						<thumb>playlist.png</thumb>
+						<label2>Play and manage your playlist</label2>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(353)</onleft>
+						<onright>SetFocus(355)</onright>
+					</item>
+					<item id="355">
+						<label>Login</label>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(354)</onleft>
+						<onright>SetFocus(356)</onright>
+					</item>
+					<item id="356">
+						<label>Logout</label>
+						<onclick><![CDATA[]]></onclick>
+						<onleft>SetFocus(355)</onleft>
+						<onright>SetFocus(350)</onright>
+					</item>
+				</content>
+			</control>
+		</control>
         <!-- VERSION -->
         <control type="label">
         	<posx>1230</posx>
@@ -149,7 +284,11 @@ selectWindow()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
+<<<<<<< HEAD
+        	<label>v0.6</label>
+=======
         	<label>v0.7</label>
+>>>>>>> upstream/master
         </control>
 	</controls>
 </window>

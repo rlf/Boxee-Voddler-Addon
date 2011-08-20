@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<window type="dialog" id="14025">
+	<defaultcontrol always="true">500</defaultcontrol>
+	<allowoverlay>yes</allowoverlay>
+	<zorder>1</zorder>
+	<backgroundcolor>00000000</backgroundcolor>
+	<animation effect="slide" start="0,576" time="100">WindowOpen</animation>
+  	<!-- <animation effect="slide" end="0,576" time="100">WindowClose</animation> -->
+	<onload lang="python"><![CDATA[
+from movies import *
+loadTrailers()
+]]></onload>
+	<onunload lang="python"><![CDATA[
+mc.GetPlayer().Stop()
+]]></onunload>
+	<coordinates>
+		<posx>300</posx>
+		<posy>100</posy>
+	</coordinates>
+	<controls>
+        <!-- VIDEO WINDOW -->
+        <control type="group" id="991">
+        	<width>640</width>
+        	<height>480</height>
+        	
+			<control type="videowindow" id="500">
+				<posx>0</posx>
+	        	<posy>0</posy>
+        		<width>640</width>
+        		<height>480</height>
+        		<onclick lang="python"><![CDATA[exitTrailer()]]></onclick>
+        	</control>
+        	
+        </control>
+	</controls>
+</window>

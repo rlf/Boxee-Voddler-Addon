@@ -26,6 +26,7 @@ SORTING_ID=202
 CATEGORY_ID=203
 PAGE_LABEL=110
 STATUS_LABEL=120
+TRAILER_WINDOW=14025
 
 # Constants
 pageSize=100
@@ -53,17 +54,46 @@ def selectMovie(listId=200):
     movie = movieList.GetItem(index)
     # change Path to point to the relevant movieUrl
     ShowDialogWait()
-    status("Playing movie %s" % movie.GetLabel())
-    try:
-        url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
-        hideWaitDialog()
-        if not url:
-            url = movie.GetProperty('url')
-        print "Playing %s" % url
-        movie.SetPath(url)
-        GetPlayer().PlayWithActionMenu(movie)
-    finally:
-        hideWaitDialog()
+    first = movie.GetProperty('url')
+    second = movie.GetProperty('loresTrailer')
+    selection = mc.ShowDialogSelect("Please Choose", ["Play Trailer" , "Play Movie"])
+    if selection == 0:
+		launchTrailer()
+		
+    else:
+        status("Playing movie %s" % movie.GetLabel())
+        try:
+            url = voddlerapi.getPlayerURL(movie.GetProperty('id'))
+            hideWaitDialog()
+            if not url:
+                            url = movie.GetProperty('url')
+            print "Playing %s" % url
+            movie.SetPath(url)
+            GetPlayer().PlayWithActionMenu(movie)
+        finally:
+            hideWaitDialog()
+
+def launchTrailer():
+    listId=200
+    movieList = GetActiveWindow().GetList(listId)
+    index = movieList.GetFocusedItem()
+    movieitem = movieList.GetItem(index)
+    trailer = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+    trailer.SetLabel("%s Trailer" % movieitem.GetLabel())
+    trailerPath = movieitem.GetProperty('loresTrailer')
+    trailer.SetPath(trailerPath)
+    ActivateWindow(TRAILER_WINDOW)
+    GetPlayer().PlayInBackground(trailer)
+	
+def loadTrailers():
+    window = GetWindow(TRAILER_WINDOW)
+	
+def exitTrailer():
+    GetPlayer().Stop()
+    xbmc.executebuiltin('Dialog.Close(%s)' % TRAILER_WINDOW)
+    mc.CloseWindow(TRAILER_WINDOW)
+	
+	
 
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch
@@ -205,6 +235,7 @@ def showMovieOnListItem(item, movie, index):
     if movie[u'trailerLowRes']:
         item.AddAlternativePath('Trailer LowRes', movie[u'trailerLowRes'].encode('ascii'), 'video/mp4', iconUrl)
         item.SetProperty('hasTrailer', 'true')
+        item.SetProperty('loresTrailer', movie[u'trailerLowRes'].encode('ascii'))
 
     cnt = 0
     for shot in screenShots:
