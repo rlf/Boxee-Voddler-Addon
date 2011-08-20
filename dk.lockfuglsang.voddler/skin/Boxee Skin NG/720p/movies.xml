@@ -330,6 +330,9 @@ loadPage()
             	</control>
 	            <control type="fixedlist" id="200"><!-- movies -->
 	            	<onleft>201</onleft><!-- go to filters -->
+					<onright lang="python"><![CDATA[
+launchTrailer()
+]]></onright>
 					<ondown lang="python"><![CDATA[
 nextPage()
 ]]></ondown>

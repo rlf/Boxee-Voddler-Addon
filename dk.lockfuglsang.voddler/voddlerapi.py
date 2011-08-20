@@ -128,6 +128,7 @@ def getAPI():
 class VoddlerAPI:
     def __init__(self):
         self.sessionId = None
+        self.token = None
         self.movieCache = {}
         self.genreCache = {}
 
@@ -350,6 +351,7 @@ class Movie:
 
         for trailer in self.getTrailers():
             item.AddAlternativePath(trailer.getName(), trailer.getURL(), 'video/mp4', iconUrl)
+            item.SetProperty(trailer.getName(), trailer.getURL())
             item.SetProperty('hasTrailer', 'true')
 
         cnt = 0

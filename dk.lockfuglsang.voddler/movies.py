@@ -26,6 +26,7 @@ SORTING_ID=202
 CATEGORY_ID=203
 PAGE_LABEL=110
 STATUS_LABEL=120
+TRAILER_WINDOW=14025
 
 # Constants
 pageSize=100
@@ -46,24 +47,60 @@ pageType = 'movie'
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
-def selectMovie(listId=200):
+def selectMovie(listId=MOVIES_ID):
     movieList = GetActiveWindow().GetList(listId)
     index = movieList.GetFocusedItem()
     movie = movieList.GetItem(index)
-    # change Path to point to the relevant movieUrl
+
     ShowDialogWait()
     status("Playing movie %s" % movie.GetLabel())
     try:
         player = mc.GetApp().GetLocalConfig().GetValue('player')
         url = voddlerapi.getAPI().getMovieURL(movie.GetProperty('id'), player)
+        trailerHD = movie.GetProperty('Trailer HD')
+        trailerSD = movie.GetProperty('Trailer SD')
+        urls = [url, trailerHD, trailerSD]
+        if trailerHD or trailerSD:
+            options = ['Movie']
+            if trailerHD:
+                options.append('Trailer HD')
+            if trailerSD:
+                options.append('Trailer SD')
+            # TODO: I can't get this to work - Boxee raises some error (seems to be a Boxee Bug).
+            # Perhaps http://jira.boxee.tv/browse/BOXEE-4540
+            # Most likely we will get an "integrated popup" on LEFT instead...
+            #selection = mc.ShowDialogSelect("Play", options)
+            #url = urls[selection]
         hideWaitDialog()
         if not url:
+            # revert to web-url
             url = movie.GetProperty('url')
         print "Playing %s" % url
         movie.SetPath(url)
-        GetPlayer().PlayWithActionMenu(movie)
+        mc.GetPlayer().PlayWithActionMenu(movie)
     finally:
         hideWaitDialog()
+
+def launchTrailer():
+    ShowDialogWait()
+    movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
+    index = movieList.GetFocusedItem()
+    movie = movieList.GetItem(index)
+
+    trailerHD = movie.GetProperty('Trailer HD')
+    trailerSD = movie.GetProperty('Trailer SD')
+    if trailerHD or trailerSD:
+        status("Playing trailer for %s" % movie.GetLabel())
+        trailer = ListItem(ListItem.MEDIA_VIDEO_TRAILER)
+        trailer.SetLabel("Trailer for %s" % movie.GetLabel())
+        if trailerHD:
+            trailer.SetPath(trailerHD)
+        elif trailerSD:
+            trailer.Setpath(trailerSD)
+            trailer.SetLabel("LQ %s" % trailer.GetLabel())
+        mc.GetPlayer().Play(trailer)
+    movieList.SetFocus()
+    hideWaitDialog()
 
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch

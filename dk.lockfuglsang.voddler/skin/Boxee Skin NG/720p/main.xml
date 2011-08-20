@@ -16,6 +16,16 @@ load()
             <texture>debuggrid.png</texture>
              -->
         </control>
+		<control type="label" id="102"><!-- login name -->
+			<posx>1260</posx>
+			<posy>5</posy>
+			<width>800</width>
+			<height>10</height>
+			<label/>
+			<font>font18b</font>
+			<align>right</align>
+			<textcolor>grey</textcolor>
+		</control>
         <control type="group">
         	<posx>20</posx>
         	<posy>200</posy>
@@ -23,7 +33,7 @@ load()
         		<width>1240</width>
         		<height>400</height>
         		<texture border="8">bg.png</texture>
-        		<colordiffuse>FF000000</colordiffuse>
+        		<colordiffuse>60000000</colordiffuse>
         	</control>
 
 			<control type="list" id="100">
@@ -140,7 +150,6 @@ selectWindow()
 			<aligny>center</aligny>
 			<textcolor>grey</textcolor>
 		</control>
-
         <!-- VERSION -->
         <control type="label">
         	<posx>1230</posx>
@@ -149,7 +158,7 @@ selectWindow()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.7</label>
+        	<label>v0.8</label>
         </control>
 	</controls>
 </window>
