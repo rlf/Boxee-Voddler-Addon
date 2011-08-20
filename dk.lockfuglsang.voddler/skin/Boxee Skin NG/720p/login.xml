@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<window type="dialog" id="14010">
+	<defaultcontrol always="true">700</defaultcontrol>
+	<allowoverlay>yes</allowoverlay>
+	<zorder>1</zorder>
+	<backgroundcolor>00000000</backgroundcolor>
+	<animation effect="slide" start="0,576" time="100">WindowOpen</animation>
+  	<animation effect="slide" end="0,576" time="100">WindowClose</animation>
+	<onload lang="python"><![CDATA[
+from login import *
+loadLogin()
+]]></onload>
+	<onunload lang="python"><![CDATA[
+unloadLogin()
+]]></onunload>
+	<coordinates>
+		<posx>300</posx>
+		<posy>200</posy>
+	</coordinates>
+	<controls>
+        <!-- LOGIN BOX -->
+        <control type="group" id="999">
+        	<width>680</width>
+        	<height>280</height>
+        	<control type="image">
+        		<width>680</width>
+        		<height>330</height>
+        		<texture border="8">bg.png</texture>
+        		<colordiffuse>FC202020</colordiffuse>
+        	</control>
+        	<control type="group">
+	        	<posx>20</posx>
+	        	<posy>20</posy>
+	        	<control type="edit" id="501">
+	        		<ondown>502</ondown>
+	        		<onup>700</onup>
+	        		<posx>0</posx>
+	        		<posy>0</posy>
+	        		<width>640</width>
+	        		<height>80</height>
+	        		<label>Username</label>
+	        		<font>font32b</font>
+	        		<textcolor>white</textcolor>
+	        		<textoffsetx>15</textoffsetx>
+	        		<textoffsety>30</textoffsety>
+	        		<align>center</align>
+	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <ontextchange lang="python">textChanged()</ontextchange>
+	        	</control>
+	        	<control type="edit" id="502">
+	        		<ondown>700</ondown>
+	        		<onup>501</onup>
+	        		<posx>0</posx>
+	        		<posy>100</posy>
+	        		<width>640</width>
+	        		<height>80</height>
+	        		<label>Password</label>
+	        		<password>true</password>
+	        		<font>font32b</font>
+	        		<textcolor>white</textcolor>
+	        		<textoffsetx>15</textoffsetx>
+	        		<textoffsety>30</textoffsety>
+	        		<align>center</align>
+	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <ontextchange lang="python">textChanged()</ontextchange>
+	        	</control>
+	        	<control type="button" id="700">
+	        		<ondown>501</ondown>
+	        		<onup>502</onup>
+	        		<onright>701</onright>
+	        		<onleft>701</onleft>
+
+	        		<posx>10</posx>
+	        		<posy>200</posy>
+	        		<width>300</width>
+	        		<height>80</height>
+	        		<font>font32b</font>
+	        		<label>Login</label>
+	        		<align>center</align>
+	        		<textoffsety>15</textoffsety>
+	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <texturenofocus border="8">btn.png</texturenofocus>
+	                <textureclick border="8">btn_click.png</textureclick>
+	                <textcolor>white</textcolor>
+					<onclick lang="python">doLogin()</onclick>
+	        	</control>
+	        	<control type="button" id="701">
+	        		<ondown>501</ondown>
+	        		<onup>502</onup>
+	        		<onright>700</onright>
+	        		<onleft>700</onleft>
+
+	        		<posx>330</posx>
+	        		<posy>200</posy>
+	        		<width>300</width>
+	        		<height>80</height>
+	        		<font>font32b</font>
+	        		<label>Exit</label>
+	        		<align>center</align>
+	        		<textoffsety>15</textoffsety>
+	                <texturefocus border="8">btn_focus.png</texturefocus>
+	                <texturenofocus border="8">btn.png</texturenofocus>
+	                <textureclick border="8">btn_click.png</textureclick>
+	                <textcolor>white</textcolor>
+					<onclick lang="python"><![CDATA[
+exitLogin()
+]]></onclick>
+	        	</control>
+        	</control>
+        </control>
+	</controls>
+</window>
