@@ -131,6 +131,7 @@ class VoddlerAPI:
         self.token = None
         self.movieCache = {}
         self.genreCache = {}
+        self.playlists = {}
 
     ''' Return a dict of key : value for this type of movie
     '''
@@ -157,6 +158,8 @@ class VoddlerAPI:
         if type not in self.genreCache.keys():
             # we don't store them, we just need the cache to be updated
             self.getGenres(type)
+        if not self.playlists:
+            self.getPlaylists() # fetch em
         dict = {'type' : type, 'category' : category, 'genre' : genre, 'sort' : sort, 'offset' : offset, 'count' : count}
         jsonData = _getURL(SEARCH_URL, urllib.urlencode(dict))
         data = json.loads(jsonData)
@@ -175,7 +178,7 @@ class VoddlerAPI:
             data[u'data'][u'videos'] = series.values()
             data[u'data'][u'count'] = len(series)
             data[u'data'][u'videos'].sort(sortMethods[sort])
-        vids = [Movie(vid, self.genreCache[type]) for vid in data[u'data'][u'videos']]
+        vids = [Movie(vid, self.genreCache[type], self.playlists) for vid in data[u'data'][u'videos']]
         return max, vids
 
     ''' Returns a sessionid and enables the VodderAPI to use functionality that requires login.
@@ -208,6 +211,8 @@ class VoddlerAPI:
     def getPlaylists(self):
         if not self.sessionId:
             raise "You need to be logged in to retrieve playlists"
+        if self.playlists:
+            return self.playlists
         jsonData = _getURL(PLAYLIST_URL, urllib.urlencode({'session' : self.sessionId}))
         data = json.loads(jsonData)
         playlists = {}
@@ -215,15 +220,42 @@ class VoddlerAPI:
             type = playlist[u'type']
             videos = []
             for video in playlist[u'videos']:
-                videos.append(int(video[u'id']))
-            playlists[type] = videos
+                videos.append(video[u'id'])
+            playlists[type] = {}
+            playlists[type]['videos'] = videos
+            playlists[type]['id'] = u2s(playlist[u'id'])
+        self.playlists = playlists
         return playlists
+
+    def addToPlaylist(self, videoId, list='favorites'):
+        if not self.playlists:
+            self.getPlaylists() # just to make sure we initialize self.playlists
+        if not self.sessionId:
+            raise "You need to be logged in to manage playlists"
+        jsonData = _getURL(PLAYLIST_ADD_URL, urllib.urlencode({'playlist' : self.playlists[list]['id'], 'video' : videoId, 'session' : self.sessionId}))
+        data = json.loads(jsonData)
+        if data[u'success']:
+            self.playlists[list]['videos'].append(videoId)
+        else:
+            raise "Unable to add to playlist : %s" % data[u'message']
+
+    def removeFromPlaylist(self, videoId, list='favorites'):
+        if not self.playlists:
+            self.getPlaylists() # just to make sure we initialize self.playlists
+        if not self.sessionId:
+            raise "You need to be logged in to manage playlists"
+        jsonData = _getURL(PLAYLIST_REMOVE_URL, urllib.urlencode({'playlist' : self.playlists[list]['id'], 'video' : videoId, 'session' : self.sessionId}))
+        data = json.loads(jsonData)
+        if data[u'success']:
+            self.playlists[list]['videos'].remove(videoId)
+        else:
+            raise "Unable to remove from playlist : %s" % data[u'message']
 
     def getVideoInfo(self, videoId):
         jsonData = _getURL(INFO_URL, urllib.urlencode({'videoId' : videoId}))
         data = json.loads(jsonData)
         # TODO: get from the self.genreCache
-        return Movie(data[u'data'][u'videos'], {})
+        return Movie(data[u'data'][u'videos'], {}, self.playlists)
 
     def getVideosForPlaylist(self, ids, sort='rating'):
         videos = []
@@ -245,9 +277,10 @@ class VoddlerAPI:
         return None
 
 class Movie:
-    def __init__(self, data, genreDict):
+    def __init__(self, data, genreDict, playlists):
         self.data = data
         self.genreDict = genreDict
+        self.playlists = playlists
 
     def getId(self):
         return self._getData(u'id')
@@ -324,7 +357,8 @@ class Movie:
     def showOnListItem(self, item, index=0):
         item.SetDuration(self.getDurationSeconds())
         item.SetLabel(self.getTitle())
-        item.SetProperty('id', self.getId())
+        id = self.getId()
+        item.SetProperty('id', id)
         #item.SetProperty('genres', getGenres(movie[u'genres']))
         item.SetProperty("details", self.getDetails())
         item.SetDescription(self.getDescription(), True)
@@ -361,6 +395,12 @@ class Movie:
             cnt += 1
         item.SetProperty('ix', "%i" % (index+1))
 
+        playlists = ['favorites', 'playlist']
+        for list in playlists:
+            if id in self.playlists[list]['videos']:
+                item.SetProperty("is%s" % string.capitalize(list), 'true')
+            else:
+                item.SetProperty("is%s" % string.capitalize(list), 'false')
 
     def _getData(self, ukey, dict=None):
         if dict is None:
