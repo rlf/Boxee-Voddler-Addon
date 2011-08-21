@@ -6,9 +6,7 @@ BACKLOG
 =======
 Tasks
 -----
-* Playback of trailers (D34dmeat has done this, need to be merged)
 * Introduce includes (so we don't need to duplicate i.e. version + login label on all screens).
-* Add/remove for favorites and playlist
 * History view as well?
 * Better episode filtering + navigation of tvseries-seasons-episodes
 
@@ -29,6 +27,11 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.9
+* Popup menu on right
+* Playback of trailers (D34dmeat has done this, need to be merged)
+* Add/remove for favorites and playlist
+
 v0.8
 * Major refactoring (introduced some OOP :D)
 * Basic support for all screens on main (only read access to playlists)

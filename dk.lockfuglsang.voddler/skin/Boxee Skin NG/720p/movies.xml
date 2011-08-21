@@ -331,7 +331,8 @@ loadPage()
 	            <control type="fixedlist" id="200"><!-- movies -->
 	            	<onleft>201</onleft><!-- go to filters -->
 					<onright lang="python"><![CDATA[
-launchTrailer()
+#launchTrailer()
+showPopup()
 ]]></onright>
 					<ondown lang="python"><![CDATA[
 nextPage()
@@ -608,7 +609,7 @@ prevPage()
 	            	</focusedlayout>
 	            	<content type="action">
 	            		<onclick lang="python"><![CDATA[
-selectMovie()
+playMovie()
 ]]></onclick>
 	            	</content>
 	            </control><!-- movies -->
@@ -647,7 +648,7 @@ selectMovie()
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
 			<aligny>center</aligny>
-        	<label>v0.8</label>
+        	<label>v0.9</label>
         </control>
 
     </controls>

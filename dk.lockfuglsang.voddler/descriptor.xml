@@ -1,8 +1,8 @@
 <app>
   <id>dk.lockfuglsang.voddler</id>
   <name>Voddler</name>
-  <version>0.8</version>
-  <description>Voddler Addon for Boxee v0.8</description>
+  <version>0.9</version>
+  <description>Voddler Addon for Boxee v0.9</description>
   <thumb>http://www.lockfuglsang.dk/boxee/voddler.png</thumb>
   <repositoryId>dk.lockfuglsang</repositoryId>
   <repository>http://www.lockfuglsang.dk/boxee</repository>
@@ -13,5 +13,4 @@
   <startWindow>main</startWindow>
   <platform>all</platform>
   <minversion>0.9.12</minversion>
-  <test-app>true</test-app>
 </app>

@@ -16,6 +16,7 @@ import voddlerapi
 
 # IDs
 WINDOW_ID=14000
+POPUP_ID=14015 # redefined here, just to not import the popup... circular ref.
 USERNAME_LBL_ID=102
 PAGETYPE_LBL_ID=111
 
@@ -47,7 +48,7 @@ pageType = 'movie'
 # -----------------------------------------------------------------------------
 # Actions
 # -----------------------------------------------------------------------------
-def selectMovie(listId=MOVIES_ID):
+def playMovie(listId=MOVIES_ID):
     movieList = GetActiveWindow().GetList(listId)
     index = movieList.GetFocusedItem()
     movie = movieList.GetItem(index)
@@ -81,7 +82,24 @@ def selectMovie(listId=MOVIES_ID):
     finally:
         hideWaitDialog()
 
-def launchTrailer():
+def showPopup():
+    mc.ActivateWindow(POPUP_ID)
+
+def removeFromPlaylist(list='favorites'):
+    movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
+    index = movieList.GetFocusedItem()
+    movie = movieList.GetItem(index)
+    voddlerapi.getAPI().removeFromPlaylist(movie.GetProperty('id'), list)
+    movie.SetProperty('is%s' % string.capitalize(list), 'false')
+
+def addToPlaylist(list='favorites'):
+    movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
+    index = movieList.GetFocusedItem()
+    movie = movieList.GetItem(index)
+    voddlerapi.getAPI().addToPlaylist(movie.GetProperty('id'), list)
+    movie.SetProperty('is%s' % string.capitalize(list), 'true')
+
+def playMovie():
     ShowDialogWait()
     movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
     index = movieList.GetFocusedItem()
@@ -196,12 +214,17 @@ def populateGenre():
     items = mc.ListItems()
     global genreCache
     genreCache = {}
+    itemList = []
+    # dicts are not that easily sorted...
     for value, name in genres.items():
         #pprint(g)
         item = ListItem(ListItem.MEDIA_UNKNOWN)
         item.SetLabel(name)
         item.SetProperty('value', value)
         genreCache[value] = item
+        itemList.append(item)
+    # ... so we wait
+    for item in sorted(itemList, lambda x,y: cmp(x.GetLabel(), y.GetLabel())):
         items.append(item)
     genre = mc.GetActiveWindow().GetList(GENRE_ID)
     genre.SetItems(items)
@@ -288,7 +311,7 @@ def saveUserSettings():
 # -----------------------------------------------------------------------------
 def getGenres(genres):
     global genreCache
-    if not globals().has_key('genreCache'):
+    if not 'genreCache' in globals():
         return string.capwords(string.join(genres, ', ').encode('utf-8', 'xmlcharreplace'), ', ')
     genre = []
     for g in genres:

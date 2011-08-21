@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!--
+ Popup (Popout) for the main movelists.
+ Allows you to:
+  - Play movie
+  - Play Trailers+
+  - Add to Favorites*
+  - Add to Playlist
+  - Remove from Favorites
+  - Remove from Playlist
+
+ + Depending on whether the trailers are available
+ * Depending on whether it's on the playlist or not
+ -->
+<window type="dialog" id="14015">
+	<defaultcontrol always="true">215</defaultcontrol>
+	<allowoverlay>yes</allowoverlay>
+	<zorder>1</zorder>
+	<backgroundcolor>00000000</backgroundcolor>
+	<animation type="WindowOpen">
+		<effect type="slide" start="-300,0" time="250"/>
+		<effect type="fade" start="0" end="100" time="250"/>
+	</animation>
+	<animation type="WindowClose">
+		<effect type="slide" end="-300,0" time="250"/>
+		<effect type="fade" start="100" end="0" time="250"/>
+	</animation>
+	<onload lang="python"><![CDATA[
+from moviepopup import *
+load()
+]]></onload>
+	<coordinates>
+		<posx>640</posx>
+		<posy>285</posy>
+	</coordinates>
+	<controls>
+		<control type="image">
+			<width>320</width>
+			<height>195</height>
+			<colordiffuse>FF000000</colordiffuse>
+			<texture border="8">bg.png</texture>
+		</control>
+		<control type="group">
+			<posx>10</posx>
+			<posy>10</posy>
+			<control type="label">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>100</width>
+				<height>20</height>
+				<font>font24b</font>
+				<label>Options</label>
+				<textcolor>grey</textcolor>
+			</control>
+			<control type="list" id="215">
+				<onleft>Dialog.Close(14015)</onleft>
+				<ondown>-</ondown>
+				<onup>-</onup>
+				<onright>-</onright><!-- sub options? -->
+				<posy>40</posy>
+				<width>300</width>
+				<height>150</height>
+				<focusedlayout width="300" height="35">
+					<control type="label">
+						<posy>2</posy>
+						<posx>10</posx>
+						<info>ListItem.Label</info>
+						<textcolor>white</textcolor>
+						<font>font22b</font>
+					</control>
+					<control type="image">
+						<width>300</width>
+						<height>34</height>
+						<texture border="8">btn_focus.png</texture>
+					</control>
+				</focusedlayout>
+				<itemlayout width="300" height="35">
+					<control type="label">
+						<posy>2</posy>
+						<posx>10</posx>
+						<info>ListItem.Label</info>
+						<textcolor>white</textcolor>
+						<font>font22</font>
+					</control>
+				</itemlayout>
+				<content type="action">
+				<onclick lang="python"><![CDATA[optionClicked()]]></onclick>
+				</content>
+			</control>
+		</control>
+	</controls>
+</window>

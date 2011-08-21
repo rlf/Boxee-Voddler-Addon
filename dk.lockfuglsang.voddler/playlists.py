@@ -24,7 +24,7 @@ def loadPage():
         movies.populateSorting()
         # do the search
         playlists = voddlerapi.getAPI().getPlaylists()
-        playlist = voddlerapi.getAPI().getVideosForPlaylist(playlists[listType], sort)
+        playlist = voddlerapi.getAPI().getVideosForPlaylist(playlists[listType]['videos'], sort)
         items = mc.ListItems()
         for ix, movie in enumerate(playlist):
             item = mc.ListItem(mc.ListItem.MEDIA_VIDEO_FEATURE_FILM)
