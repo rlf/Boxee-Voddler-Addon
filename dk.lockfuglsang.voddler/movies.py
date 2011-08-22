@@ -91,6 +91,27 @@ def addToPlaylist(list='favorites'):
     global pageCache, currentPage
     del pageCache[currentPage]
 
+def playTrailer():
+    ShowDialogWait()
+    movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
+    index = movieList.GetFocusedItem()
+    movie = movieList.GetItem(index)
+
+    trailerHD = movie.GetProperty('Trailer HD')
+    trailerSD = movie.GetProperty('Trailer SD')
+    if trailerHD or trailerSD:
+        status("Playing trailer for %s" % movie.GetLabel())
+        trailer = ListItem(ListItem.MEDIA_VIDEO_TRAILER)
+        trailer.SetLabel("Trailer for %s" % movie.GetLabel())
+        if trailerHD:
+            trailer.SetPath(trailerHD)
+        elif trailerSD:
+            trailer.Setpath(trailerSD)
+            trailer.SetLabel("LQ %s" % trailer.GetLabel())
+        mc.GetPlayer().Play(trailer)
+    movieList.SetFocus()
+    hideWaitDialog()
+
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch, pageType
     api = voddlerapi.getAPI()

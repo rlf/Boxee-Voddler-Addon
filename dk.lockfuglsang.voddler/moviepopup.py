@@ -54,8 +54,7 @@ def optionClicked():
     if cmd == 'play':
         movies.playMovie()
     elif cmd == 'playTrailer':
-        # suboption?
-        movies.playMovie()
+        movies.playTrailer()
     elif cmd.startswith('add:'):
         movies.addToPlaylist(cmd[4:])
     elif cmd.startswith('rm:'):

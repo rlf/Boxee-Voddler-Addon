@@ -814,7 +814,7 @@ playMovie()
           <font>font14</font>
           <textcolor>40FFFFFF</textcolor>
       <aligny>center</aligny>
-          <label>v0.10</label>
+          <label>v0.11</label>
         </control>
 
     </controls>
