@@ -130,7 +130,7 @@ class VoddlerAPI:
         self.sessionId = None
         self.token = None
         self.movieCache = {}
-        self.genreCache = {}
+        self.genreCache = {'all' : {}}
         self.playlists = {}
 
     ''' Return a dict of key : value for this type of movie
@@ -145,8 +145,11 @@ class VoddlerAPI:
         data = json.loads(jsonData)
         pprint(data)
         dict = {}
-        for i, g in enumerate(data[u'data']):
-            dict[u2s(g[u'value'])] = u2s(g[u'name'])
+        for g in data[u'data']:
+            k = u2s(g[u'value'])
+            v = u2s(g[u'name'])
+            dict[k] = v
+            self.genreCache['all'][k] = v
         self.genreCache[type] = dict
         return dict
 
@@ -177,9 +180,14 @@ class VoddlerAPI:
             status("Sorting TVSeries")
             data[u'data'][u'videos'] = series.values()
             data[u'data'][u'count'] = len(series)
-            data[u'data'][u'videos'].sort(sortMethods[sort])
-        vids = [Movie(vid, self.genreCache[type], self.playlists) for vid in data[u'data'][u'videos']]
+        # 'all' because some vids are in more than one category... sigh...
+        vids = [Movie(vid, self.genreCache['all'], self.playlists) for vid in data[u'data'][u'videos']]
+        if type == 'episode':
+            vids.sort(sortMethods[sort])
         return max, vids
+
+    def getSessionId(self):
+        return self.sessionId
 
     ''' Returns a sessionid and enables the VodderAPI to use functionality that requires login.
     '''
@@ -254,8 +262,10 @@ class VoddlerAPI:
     def getVideoInfo(self, videoId):
         jsonData = _getURL(INFO_URL, urllib.urlencode({'videoId' : videoId}))
         data = json.loads(jsonData)
-        # TODO: get from the self.genreCache
-        return Movie(data[u'data'][u'videos'], {}, self.playlists)
+        type = 'movie' # may not be correct!
+        if not type in self.genreCache.keys():
+            self.getGenres(type)
+        return Movie(data[u'data'][u'videos'], self.genreCache[type], self.playlists)
 
     def getVideosForPlaylist(self, ids, sort='rating'):
         videos = []
@@ -301,7 +311,16 @@ class Movie:
         return self.getData(u'type')
 
     def getGenres(self):
-        return string.join([self.genreDict[u2s(key)] for key in self._getList(u'genres')], ', ')
+        genres = []
+        for key in self._getList(u'genres'):
+            k = u2s(key)
+            if k in self.genreDict:
+                genres.append(self.genreDict[k])
+            else:
+                # Apparently Voddler mixes genres - even though the API doesn't include them.
+                print "Genre: %s was not found for this type of movies" % k
+                genres.append(string.capitalize(k))
+        return string.join(genres, ', ')
 
     def getDurationSeconds(self):
         return int(self._getData(u'runtime')) * 60
@@ -359,7 +378,7 @@ class Movie:
         item.SetLabel(self.getTitle())
         id = self.getId()
         item.SetProperty('id', id)
-        #item.SetProperty('genres', getGenres(movie[u'genres']))
+        item.SetProperty('genres', self.getGenres())
         item.SetProperty("details", self.getDetails())
         item.SetDescription(self.getDescription(), True)
         iconUrl = self.getIcon()

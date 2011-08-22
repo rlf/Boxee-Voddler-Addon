@@ -27,6 +27,9 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.10
+* Improved UI, so information-clutter is minimized
+
 v0.9
 * Popup menu on right
 * Playback of trailers (D34dmeat has done this, need to be merged)

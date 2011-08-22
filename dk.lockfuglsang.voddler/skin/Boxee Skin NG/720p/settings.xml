@@ -145,6 +145,7 @@ saveSettings()
         			</control>
         			<control type="wraplist" id="1002">
         				<onup>1001</onup>
+        				<ondown>3</ondown>
         				<posx>310</posx>
         				<posy>13</posy>
         				<width>570</width>
@@ -214,6 +215,15 @@ saveSettings()
 						<texture border="8">btn_focus.png</texture>
 						<visible>Control.HasFocus(1002)</visible>
 					</control>
+        		</control>
+        		<control type="button" id="3">
+        			<label>Clear All</label>
+        			<onclick lang="python"><![CDATA[mc.GetApp().GetLocalConfig().ResetAll()]]></onclick>
+        			<texturefocus border="8">btn_focus.png</texturefocus>
+        			<texturenofocus border="8">btn.png</texturenofocus>
+        			<textureclick border="8">btn_click.png</textureclick>
+        			<align>center</align>
+        			<aligny>center</aligny>
         		</control>
         	</control>
         </control>

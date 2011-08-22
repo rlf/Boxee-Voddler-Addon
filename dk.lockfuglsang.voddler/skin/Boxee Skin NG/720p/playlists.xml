@@ -510,7 +510,7 @@ selectMovie()
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
 			<aligny>center</aligny>
-        	<label>v0.9</label>
+        	<label>v0.10</label>
         </control>
     </controls>
 </window>
