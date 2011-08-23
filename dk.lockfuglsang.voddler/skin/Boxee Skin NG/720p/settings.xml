@@ -227,5 +227,26 @@ saveSettings()
         		</control>
         	</control>
         </control>
+		<control type="label" id="102"><!-- login name -->
+			<posx>1150</posx>
+			<posy>690</posy>
+			<width>800</width>
+			<height>20</height>
+			<label/>
+			<font>font18b</font>
+			<align>right</align>
+			<aligny>center</aligny>
+			<textcolor>grey</textcolor>
+		</control>
+        <!-- VERSION -->
+        <control type="label">
+        	<posx>1230</posx>
+        	<posy>690</posy>
+        	<width>80</width>
+        	<height>20</height>
+        	<font>font14</font>
+        	<textcolor>40FFFFFF</textcolor>
+        	<label>v0.12</label>
+        </control>
 	</controls>
 </window>

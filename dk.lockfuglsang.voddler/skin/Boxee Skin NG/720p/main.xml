@@ -126,11 +126,17 @@ selectWindow()
 						<onclick><![CDATA[]]></onclick>
 					</item>
 					<item id="5">
+						<label>History</label>
+						<thumb>history.png</thumb>
+						<label2>See your history</label2>
+						<onclick><![CDATA[]]></onclick>
+					</item>
+					<item id="6">
 						<label>Settings</label>
 						<thumb>icons/icon_settings_system.png</thumb>
 						<onclick><![CDATA[]]></onclick>
 					</item>
-					<item id="6">
+					<item id="7">
 						<label>Logout</label>
 						<thumb>icons/icon_menu_logout.png</thumb>
 						<onclick><![CDATA[]]></onclick>
@@ -158,7 +164,7 @@ selectWindow()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.11</label>
+        	<label>v0.12</label>
         </control>
 	</controls>
 </window>

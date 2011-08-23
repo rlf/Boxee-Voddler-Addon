@@ -15,6 +15,7 @@ from status import *
 import voddlerapi
 
 # IDs
+
 WINDOW_ID=14000
 POPUP_ID=14015 # redefined here, just to not import the popup... circular ref.
 USERNAME_LBL_ID=102
@@ -69,27 +70,42 @@ def playMovie(listId=MOVIES_ID):
     mc.GetPlayer().PlayWithActionMenu(movie)
 
 def showPopup():
+    # remember current item...
+    global currentItem
+    currentItem = mc.GetActiveWindow().GetList(MOVIES_ID).GetFocusedItem()
     mc.ActivateWindow(POPUP_ID)
+
+''' Updates the item on the list
+
+    This method is needed, because apparently list.GetItems() returns a copy, instead of a reference.
+'''
+def updateMovieListItem(movieList, index, movie):
+    global pageCache, currentPage
+    items = movieList.GetItems()
+    items[index] = movie
+    pageCache[currentPage] = items
+    movieList.SetItems(items)
+    movieList.SetFocusedItem(index)
 
 def removeFromPlaylist(list='favorites'):
     movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
     index = movieList.GetFocusedItem()
-    movie = movieList.GetItem(index)
+    items = movieList.GetItems()
+    movie = items[index]
     voddlerapi.getAPI().removeFromPlaylist(movie.GetProperty('id'), list)
     movie.SetProperty('is%s' % string.capitalize(list), 'false')
-    # Apparently this doesn't go into the cache :(
-    global pageCache, currentPage
-    del pageCache[currentPage]
+    mc.ShowDialogNotification("%s removed from %s" % (movie.GetLabel(), list))
+    updateMovieListItem(movieList, index, movie)
 
 def addToPlaylist(list='favorites'):
     movieList = mc.GetActiveWindow().GetList(MOVIES_ID)
     index = movieList.GetFocusedItem()
+    items = movieList.GetItems()
     movie = movieList.GetItem(index)
     voddlerapi.getAPI().addToPlaylist(movie.GetProperty('id'), list)
     movie.SetProperty('is%s' % string.capitalize(list), 'true')
-    # Apparently this doesn't go into the cache :(
-    global pageCache, currentPage
-    del pageCache[currentPage]
+    mc.ShowDialogNotification("%s added to %s" % (movie.GetLabel(), list))
+    updateMovieListItem(movieList, index, movie)
 
 def playTrailer():
     ShowDialogWait()
@@ -112,9 +128,56 @@ def playTrailer():
     movieList.SetFocus()
     hideWaitDialog()
 
+''' Search used by movie, episode and documentary
+'''
+def searchNormal(window, mainList):
+    global currentPage, pageCache, pageSize, maxCount, maxPage
+    g = getGenre()
+    s = getSorting()
+    c = getCategory()
+    offset = currentPage * pageSize
+    items = ListItems()
+    if currentPage in pageCache.keys():
+        items = pageCache[currentPage]
+    else:
+        status("Fetching page %i" % (currentPage+1))
+        maxCount, data = voddlerapi.getAPI().search(pageType, c, g, s, offset, pageSize)
+        maxPage = (maxCount-1) / pageSize
+        if maxPage < 0:
+            maxPage = 0
+        itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
+        for index, movie in enumerate(data):
+            status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+            item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+            movie.showOnListItem(item, offset+index)
+            items.append(item)
+        pageCache[currentPage] = items
+    mainList.SetItems(items)
+
+def searchPlaylist(window, mainList):
+    global currentPage, pageCache, pageSize, maxCount, maxPage
+    offset = currentPage * pageSize
+    items = ListItems()
+    if currentPage in pageCache.keys():
+        items = pageCache[currentPage]
+    else:
+        status("Fetching page %i" % (currentPage+1))
+        # TODO: Support sorting?
+        maxCount, data = voddlerapi.getAPI().getMoviesOnPlaylist(pageType, 'alphabetical')
+        maxPage = (maxCount-1) / pageSize
+        if maxPage < 0:
+            maxPage = 0
+        itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
+        for index, movie in enumerate(data):
+            status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+            item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+            movie.showOnListItem(item, offset+index)
+            items.append(item)
+        pageCache[currentPage] = items
+    mainList.SetItems(items)
+
 def search(reset=False):
     global maxPage, maxCount, currentPage, pageCache, lastPage, lastSearch, pageType
-    api = voddlerapi.getAPI()
     ShowDialogWait()
     status("Searching...")
     saveUserSettings()
@@ -127,28 +190,10 @@ def search(reset=False):
         pageCache.clear()
         lastPage = 0
     try:
-        g = getGenre()
-        s = getSorting()
-        c = getCategory()
-        offset = currentPage * pageSize
-        items = ListItems()
-        if currentPage in pageCache.keys():
-            items = pageCache[currentPage]
-        else:
-            status("Fetching page %i" % (currentPage+1))
-            maxCount, data = api.search(pageType, c, g, s, offset, pageSize)
-            maxPage = (maxCount-1) / pageSize
-            if maxPage < 0:
-                maxPage = 0
-            itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
-            for index, movie in enumerate(data):
-                status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
-                item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
-                movie.showOnListItem(item, offset+index)
-                items.append(item)
-            pageCache[currentPage] = items
-
-        mainList.SetItems(items)
+        if isNormal():
+            searchNormal(window, mainList)
+        elif isPlaylist():
+            searchPlaylist(window, mainList)
         updateStatusLabel()
     finally:
         hideWaitDialog()
@@ -179,6 +224,14 @@ def updateStatusLabel():
 def isSearchAllowed():
     global lastSearch
     return time.time() - lastSearch > TIME_BETWEEN_SEARCHES
+
+def isNormal():
+    global pageType
+    return pageType in ['movie', 'episode', 'documentary']
+
+def isPlaylist():
+    global pageType
+    return pageType in ['playlist', 'favorites', 'history']
 
 def nextPage():
     global currentPage, maxPage
@@ -267,15 +320,20 @@ def populateLists():
     list.SetItems(items)
 
 def populateControls():
+    global pageType
     # Initialize UI
     ShowDialogWait()
     try:
         window = GetActiveWindow()
         if login.getLoggedIn():
             window.GetLabel(USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
-        populateSorting()
-        populateCategory()
-        populateGenre()
+        if not (isPlaylist()):
+            populateSorting()
+            populateCategory()
+            populateGenre()
+            window.GetControl(2).SetVisible(True)
+        else:
+            window.GetControl(2).SetVisible(False)
         restoreUserSettings()
     finally:
         hideWaitDialog()
@@ -334,7 +392,7 @@ def getCategory():
     return _getListItemValue(CATEGORY_ID)
 
 def loadPage():
-    global pageCache, currentPage, maxPage, pageType, oldPageType, multiPageCache
+    global pageCache, currentPage, maxPage, pageType, oldPageType, multiPageCache, currentItem
     window = mc.GetActiveWindow()
     window.GetControl(1).SetVisible(False)
     mc.ShowDialogWait()
@@ -343,8 +401,12 @@ def loadPage():
         pageType = 'movie'
     if not pageType in multiPageCache.keys():
         multiPageCache[pageType] = {}
+    if pageType != oldPageType:
+        currentItem = 0
     pageCache = multiPageCache[pageType]
-    pagetypes = {'movie' : 'Movies', 'episode' : 'TVSeries', 'documentary' : 'Documentaries'}
+    if isPlaylist():
+        pageCache = {} # Force a refresh - since we have no other means of "refreshing"
+    pagetypes = {'movie' : 'Movies', 'episode' : 'TVSeries', 'documentary' : 'Documentaries', 'favorites' : 'Favorites', 'playlist' : 'Playlist', 'history' : 'History'}
     window.GetLabel(PAGETYPE_LBL_ID).SetLabel(pagetypes[pageType])
     populateControls()
     restoreUserSettings()
@@ -360,6 +422,7 @@ def loadPage():
     window.GetControl(1).SetVisible(True)
     if maxCount > 0:
         window.GetList(MOVIES_ID).SetFocus()
+        window.GetList(MOVIES_ID).SetFocusedItem(currentItem)
     else:
         window.GetList(GENRE_ID).SetFocus()
 

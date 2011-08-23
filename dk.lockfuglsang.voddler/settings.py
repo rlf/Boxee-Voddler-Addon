@@ -1,6 +1,6 @@
 # settings.py - UI for settings
 
-import mc
+import mc, movies, login
 
 CONFIG = {'player' : 1001, 'pages' : 1002}
 DEFAULTS = {'player' : 'embed', 'pages' : '100'}
@@ -16,6 +16,7 @@ def loadPage():
             if item.GetPath() == value:
                 list.SetFocusedItem(index)
                 break
+    window.GetLabel(movies.USERNAME_LBL_ID).SetLabel(login.getLoggedIn())
 
 def saveSettings():
     window = mc.GetActiveWindow()

@@ -2,6 +2,7 @@ import mc
 import login
 from status import *
 
+lastSelected = None
 def load():
     mc.ShowDialogWait()
     if not login.getLoggedIn():
@@ -17,14 +18,19 @@ def postLogin():
         mc.GetActiveWindow().GetLabel(102).SetLabel("")
         login.login(lambda: postLogin())
     hideWaitDialog()
+    global lastSelected
+    if lastSelected is not None:
+        mc.GetActiveWindow().GetList(100).SetFocusedItem(lastSelected)
 
 def selectWindow():
+    global lastSelected
     list = mc.GetActiveWindow().GetList(100)
     items = list.GetItems()
-    item = items[list.GetFocusedItem()]
+    lastSelected = list.GetFocusedItem()
+    item = items[lastSelected]
     label = item.GetLabel()
-    windows = {'Movies' : 14000, 'TVSeries' : 14000, 'Documentaries' : 14000, 'Favorites' : 14003, 'Playlist' : 14003, 'Settings' : 14009}
-    pagetype = {'Movies' : 'movie', 'TVSeries' : 'episode', 'Documentaries' : 'documentary', 'Favorites' : 'favorites', 'Playlist' : 'playlist'}
+    windows = {'Movies' : 14000, 'TVSeries' : 14000, 'Documentaries' : 14000, 'Favorites' : 14000, 'Playlist' : 14000, 'Settings' : 14009, 'History' : 14000}
+    pagetype = {'Movies' : 'movie', 'TVSeries' : 'episode', 'Documentaries' : 'documentary', 'Favorites' : 'favorites', 'Playlist' : 'playlist', 'History' : 'history'}
     if label in windows:
         if label in pagetype:
             mc.GetApp().GetLocalConfig().SetValue('pageType', pagetype[label])

@@ -22,10 +22,6 @@ def load():
     if movie.GetProperty('hasTrailer'):
         items.append(createItem('playTrailer', 'Play Trailer'))
 
-    print "isFavorites? %s" % movie.GetProperty("isFavorites")
-    movie.Dump()
-    print "isPlaylist? %s" % movie.GetProperty("isPlaylist")
-
     if movie.GetProperty('isFavorites') == 'true':
         items.append(createItem('rm:favorites', 'Remove from Favorites'))
     else:

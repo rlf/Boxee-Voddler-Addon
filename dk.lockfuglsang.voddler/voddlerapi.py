@@ -156,8 +156,6 @@ class VoddlerAPI:
     ''' Return a list of Movie objects
     '''
     def search(self, type='movie', category='free', genre='all', sort='rating', offset=0, count=100):
-        if type == 'episode':
-            count = 200
         if type not in self.genreCache.keys():
             # we don't store them, we just need the cache to be updated
             self.getGenres(type)
@@ -168,11 +166,12 @@ class VoddlerAPI:
         data = json.loads(jsonData)
         max = data[u'data'][u'count']
         if type == 'episode':
+            # TODO: Is this too heavy?
             series = {}
             data = _postProcess(data, series)
-            while (offset+count < max) and (genre is not 'all'):
+            while ((offset+count) < max) and (genre != 'all'):
                 num = (offset / count) + 1
-                status("Fetching page %i of %i" % (num, math.ceil(max/count)))
+                status("Fetching episodes", num, math.ceil(max/count))
                 offset += count
                 jsonData = _getURL(SEARCH_URL % urllib.urlencode(dict)) # only GET supported
                 d = json.loads(jsonData)
@@ -180,6 +179,8 @@ class VoddlerAPI:
             status("Sorting TVSeries")
             data[u'data'][u'videos'] = series.values()
             data[u'data'][u'count'] = len(series)
+            if genre != 'all':
+                max = len(series)
         # 'all' because some vids are in more than one category... sigh...
         vids = [Movie(vid, self.genreCache['all'], self.playlists) for vid in data[u'data'][u'videos']]
         if type == 'episode':
@@ -235,6 +236,13 @@ class VoddlerAPI:
         self.playlists = playlists
         return playlists
 
+    def getMoviesOnPlaylist(self, type, sort='rating'):
+        list = self.getPlaylists()
+        if type == 'history':
+            sort = None # History is ALWAYS database order
+        movies = self.getVideosForPlaylist(list[type]['videos'], sort)
+        return len(movies), movies
+
     def addToPlaylist(self, videoId, list='favorites'):
         if not self.playlists:
             self.getPlaylists() # just to make sure we initialize self.playlists
@@ -271,7 +279,8 @@ class VoddlerAPI:
         videos = []
         for id in ids:
             videos.append(self.getVideoInfo(id))
-        videos.sort(sortMethods[sort])
+        if sort:
+            videos.sort(sortMethods[sort])
         return videos
 
     def getMovieURL(self, videoId, player='flash'):

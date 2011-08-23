@@ -7,14 +7,10 @@ BACKLOG
 Tasks
 -----
 * Introduce includes (so we don't need to duplicate i.e. version + login label on all screens).
-* History view as well?
 * Better episode filtering + navigation of tvseries-seasons-episodes
 
 Epics
 -----
-E Main page (Episode, Movies, Documentaries)
- * Episodes (TVSeries) - different organisation (Title > Season > Episodes)
- * Documentaries
 E VoddlerNet Playback
 E Search for movie (not currently supported in the metaapi)
 
@@ -27,6 +23,13 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.12
+* Minor UI improvements
+* History added
+* Playlists (Favorites, Playlist & History) now shares skin with Movies etc.
+* Adding/Removing of Playlist/Favorites better supported (visual feedback)
+* Better (still not fantastic) support for TVSeries
+
 v0.11
 * Reintroduced trailers (where merged out a late night)
 
