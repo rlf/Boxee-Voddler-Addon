@@ -413,10 +413,9 @@ def loadPage():
     if not pageCache:
         populateLists()
         search(True)
-    else:
+    elif pageCache and currentPage in pageCache.keys():
         window.GetList(MOVIES_ID).SetItems(pageCache[currentPage])
-        # restore dynamic labels
-        updateStatusLabel()
+    updateStatusLabel()
     oldPageType = pageType
     hideWaitDialog()
     window.GetControl(1).SetVisible(True)

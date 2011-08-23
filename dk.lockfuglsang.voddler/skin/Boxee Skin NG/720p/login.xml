@@ -89,6 +89,7 @@ unloadLogin()
 	                <texturenofocus border="8">btn.png</texturenofocus>
 	                <textureclick border="8">btn_click.png</textureclick>
 	                <textcolor>white</textcolor>
+	                <focusedcolor>ffbf0673</focusedcolor>
 					<onclick lang="python">doLogin()</onclick>
 	        	</control>
 	        	<control type="button" id="701">
@@ -109,6 +110,7 @@ unloadLogin()
 	                <texturenofocus border="8">btn.png</texturenofocus>
 	                <textureclick border="8">btn_click.png</textureclick>
 	                <textcolor>white</textcolor>
+	                <focusedcolor>ffbf0673</focusedcolor>
 					<onclick lang="python"><![CDATA[
 exitLogin()
 ]]></onclick>
