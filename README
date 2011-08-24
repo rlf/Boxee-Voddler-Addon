@@ -23,6 +23,11 @@ E - Epic - a broader description of desired functionality
 
 COMPLETED
 =========
+v0.13
+* Issue#15 - mc.Http()
+* Issue#12 - Partly, VoddlerPlayer.swf now gives same error as embedded
+* Issue#11 - UI imp.
+
 v0.12
 * Minor UI improvements
 * History added

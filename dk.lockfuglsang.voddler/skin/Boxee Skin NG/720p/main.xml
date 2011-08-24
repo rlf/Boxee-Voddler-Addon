@@ -164,7 +164,7 @@ selectWindow()
         	<height>20</height>
         	<font>font14</font>
         	<textcolor>40FFFFFF</textcolor>
-        	<label>v0.12</label>
+        	<label>v0.13</label>
         </control>
 	</controls>
 </window>

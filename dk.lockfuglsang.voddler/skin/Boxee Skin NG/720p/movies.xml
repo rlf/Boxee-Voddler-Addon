@@ -194,38 +194,38 @@ loadPage()
                                     <info>ListItem.Label</info>
                                     <textcolor>FFD0D0D0</textcolor>
                                 </control>
-                                <control type="group"><!-- unfortunately progress is not very good atm. -->
-                                    <posx>40</posx>
-                                    <posy>36</posy>
-                                    <width>70</width>
-                                    <height>14</height>
+                                <control type="group"><!-- Stars -->
+                                    <posx>45</posx>
+                                    <posy>40</posy>
+                                    <width>90</width>
+                                    <height>20</height>
                                     <control type="image"><!-- disabled stars -->
-                                        <width>90</width>
-                                        <height>18</height>
+                                        <width>125</width>
+                                        <height>25</height>
                                         <texture>stars_empty.png</texture>
                                     </control>
                                     <control type="image">
-                                        <width>90</width>
-                                        <height>18</height>
+                                        <width>125</width>
+                                        <height>25</height>
                                         <texture>stars_$INFO[ListItem.property(custom:rating)].png</texture>
                                     </control>
-                                    <control type="label">
-                                        <posx>98</posx>
-                                        <posy>2</posy>
-                                        <width>200</width>
-                                        <height>50</height>
-                                        <font>font12b</font>
-                                        <aligny>left</aligny>
-                                        <info>ListItem.property(custom:details)</info>
-                                        <textcolor>grey</textcolor>
-                                    </control>
                                 </control>
-                                <control type="label">
-                                    <posx>40</posx>
-                                    <posy>52</posy>
+                                <control type="label"><!-- Year | Duration -->
+                                    <posx>180</posx>
+                                    <posy>40</posy>
+                                    <width>200</width>
+                                    <height>20</height>
+                                    <font>font20b</font>
+                                    <aligny>left</aligny>
+                                    <info>ListItem.property(custom:details)</info>
+                                    <textcolor>grey</textcolor>
+                                </control>
+                                <control type="label"><!-- Genres -->
+                                    <posx>45</posx>
+                                    <posy>70</posy>
                                     <width>450</width>
                                     <height>60</height>
-                                    <font>font16</font>
+                                    <font>font20</font>
                                     <aligny>left</aligny>
                                     <label>$INFO[ListItem.property(custom:genres)]</label>
                                     <textcolor>grey</textcolor>
@@ -281,18 +281,18 @@ loadPage()
                             <align>right</align>
                         </control>
                         <control type="group">
-                            <posx>15</posx>
+                            <posx>10</posx>
                             <posy>5</posy>
                             <control type="image">
                                 <posx>0</posx>
-                                <posy>5</posy>
-                                <height>130</height>
-                                <width>95</width>
+                                <posy>0</posy>
+                                <height>140</height><!-- 1,0E+2 -->
+                                <width>100</width>
                                 <texture>$INFO[ListItem.Thumb]</texture>
                                 <aspectratio>keep</aspectratio>
                             </control>
                             <control type="group">
-                                <posx>30</posx>
+                                <posx>40</posx>
                                 <control type="label">
                                     <posx>69</posx>
                                     <posy>0</posy>
@@ -304,38 +304,38 @@ loadPage()
                                     <textcolor>white</textcolor>
                                     <scroll>true</scroll>
                                 </control>
-                                <control type="group"><!-- unfortunately progress is not very good atm. -->
-                                    <posx>69</posx>
-                                    <posy>36</posy>
+                                <control type="group"><!-- Stars -->
+                                    <posx>75</posx>
+                                    <posy>50</posy>
                                     <width>80</width>
-                                    <height>16</height>
+                                    <height>30</height>
                                     <control type="image"><!-- disabled stars -->
-                                        <width>100</width>
-                                        <height>20</height>
+                                        <width>150</width>
+                                        <height>30</height>
                                         <texture>stars_empty.png</texture>
                                     </control>
                                     <control type="image">
-                                        <width>100</width>
-                                        <height>20</height>
+                                        <width>150</width>
+                                        <height>30</height>
                                         <texture>stars_$INFO[ListItem.property(custom:rating)].png</texture>
                                     </control>
-                                    <control type="label">
-                                        <posx>104</posx>
-                                        <posy>0</posy>
-                                        <width>200</width>
-                                        <height>50</height>
-                                        <font>font16b</font>
-                                        <aligny>left</aligny>
-                                        <info>ListItem.property(custom:details)</info>
-                                        <textcolor>grey</textcolor>
-                                    </control>
                                 </control>
-                                <control type="label">
-                                    <posx>71</posx>
-                                    <posy>56</posy>
+                                <control type="label"><!-- Year | Duration -->
+                                    <posx>235</posx>
+                                    <posy>50</posy>
+                                    <width>200</width>
+                                    <height>50</height>
+                                    <font>font24b</font>
+                                    <aligny>left</aligny>
+                                    <info>ListItem.property(custom:details)</info>
+                                    <textcolor>grey</textcolor>
+                                </control>
+                                <control type="label"><!-- Genres -->
+                                    <posx>75</posx>
+                                    <posy>85</posy>
                                     <width>450</width>
                                     <height>60</height>
-                                    <font>font20b</font>
+                                    <font>font28</font>
                                     <align>left</align>
                                     <info>ListItem.property(custom:genres)</info>
                                     <textcolor>grey</textcolor>
@@ -822,7 +822,7 @@ loadPage()
             <font>font14</font>
             <textcolor>40FFFFFF</textcolor>
             <aligny>center</aligny>
-            <label>v0.12</label>
+            <label>v0.13</label>
         </control>
 
     </controls>

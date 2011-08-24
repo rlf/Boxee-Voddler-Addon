@@ -25,8 +25,8 @@ PLAYLIST_REMOVE_URL = USER_API + "playlistremove/1"
 
 # PLAYER URLs
 PLAYER1_URL = "https://www.voddler.com/playapi/embedded/1?session=%s&videoId=%s&format=html"
-FLASH_PLAYER_URL_QUOTED = urllib.quote_plus('http://player.voddler.com/VoddlerPlayer.swf')
-PLAYER2_URL = "flash://player.voddler.com/src=%s&bx-cookie=%s"
+FLASH_PLAYER_URL_QUOTED = urllib.quote_plus('http://player.voddler.com/VoddlerPlayer.swf?')
+PLAYER2_URL = "flash://www.lockfuglsang.dk/src=%s%s&bx-jsactions=http%%3A%%2F%%2Fwww.lockfuglsang.dk%%2Fboxee%%2Fvoddler.js"
 
 PLATFORMS = ['iphone', 'web', 'android', 'symbian']
 
@@ -67,10 +67,12 @@ def _getURL(url, postData=None):
     else:
         print "%s" % (url)
     if url.find("%") is not -1:
-        f = urllib2.urlopen(url % postData) # GET
+        #f = urllib2.urlopen(url % postData) # GET
+        data = mc.Http().Get(url % postData)
     else:
-        f = urllib2.urlopen(url, postData) # POST
-    data = f.read()
+        #f = urllib2.urlopen(url, postData) # POST
+        data = mc.Http().Post(url, postData)
+    #data = f.read()
     print data
     return data
 
@@ -128,7 +130,6 @@ def getAPI():
 class VoddlerAPI:
     def __init__(self):
         self.sessionId = None
-        self.token = None
         self.movieCache = {}
         self.genreCache = {'all' : {}}
         self.playlists = {}
@@ -207,13 +208,13 @@ class VoddlerAPI:
     def getToken(self):
         if not self.sessionId:
             raise "You must be logged in before asking for a token"
-        if self.token:
-            return self.token
+        # We need a new token each and every time
         jsonData = _getURL(TOKEN_URL, urllib.urlencode({'session' : self.sessionId}))
         data = json.loads(jsonData)
+        token = None
         if data[u'success']:
-            self.token = u2s(data[u'data'][u'token'])
-        return self.token
+            token = u2s(data[u'data'][u'token'])
+        return token
 
     ''' Returns a dictionary with key : [video-ids] of the different playlists.
     '''
@@ -292,6 +293,7 @@ class VoddlerAPI:
             # generate a flash url
             dict = {'videoid' : videoId, 'cridid' : 1, 'token' : self.getToken()}
             cookie = urllib.quote_plus(urllib.urlencode(dict))
+            # bx-cookie doesn't seem to cut it... I need to set the flashVars
             return PLAYER2_URL % (FLASH_PLAYER_URL_QUOTED, cookie)
         return None
 

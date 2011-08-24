@@ -410,11 +410,11 @@ def loadPage():
     window.GetLabel(PAGETYPE_LBL_ID).SetLabel(pagetypes[pageType])
     populateControls()
     restoreUserSettings()
-    if not pageCache:
+    if pageCache and currentPage in pageCache.keys():
+        window.GetList(MOVIES_ID).SetItems(pageCache[currentPage])
+    else:
         populateLists()
         search(True)
-    elif pageCache and currentPage in pageCache.keys():
-        window.GetList(MOVIES_ID).SetItems(pageCache[currentPage])
     updateStatusLabel()
     oldPageType = pageType
     hideWaitDialog()
