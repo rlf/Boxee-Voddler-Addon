@@ -12,7 +12,8 @@ META_API = BASE_URL + "metaapi/"
 USER_API = BASE_URL + "userapi/"
 
 # META API
-SEARCH_URL = META_API + "browse/1?%s"
+BROWSE_URL = META_API + "browse/1?%s"
+SEARCH_URL = META_API + "search/1?%s"
 GENRE_URL = META_API + "genres/1?%s"
 INFO_URL = META_API + "info/1?%s"
 
@@ -156,13 +157,45 @@ class VoddlerAPI:
 
     ''' Return a list of Movie objects
     '''
-    def search(self, type='movie', category='free', genre='all', sort='rating', offset=0, count=100):
+    def browse(self, type='movie', category='free', genre='all', sort='rating', offset=0, count=100):
         if type not in self.genreCache.keys():
             # we don't store them, we just need the cache to be updated
             self.getGenres(type)
         if not self.playlists:
             self.getPlaylists() # fetch em
         dict = {'type' : type, 'category' : category, 'genre' : genre, 'sort' : sort, 'offset' : offset, 'count' : count}
+        jsonData = _getURL(BROWSE_URL, urllib.urlencode(dict))
+        data = json.loads(jsonData)
+        max = data[u'data'][u'count']
+        if type == 'episode':
+            # TODO: Is this too heavy?
+            series = {}
+            data = _postProcess(data, series)
+            while ((offset+count) < max) and (genre != 'all'):
+                num = (offset / count) + 1
+                status("Fetching episodes", num, math.ceil(max/count))
+                offset += count
+                jsonData = _getURL(SEARCH_URL % urllib.urlencode(dict)) # only GET supported
+                d = json.loads(jsonData)
+                _postProcess(d, series)
+            status("Sorting TVSeries")
+            data[u'data'][u'videos'] = series.values()
+            data[u'data'][u'count'] = len(series)
+            if genre != 'all':
+                max = len(series)
+        # 'all' because some vids are in more than one category... sigh...
+        vids = [Movie(vid, self.genreCache['all'], self.playlists) for vid in data[u'data'][u'videos']]
+        if type == 'episode':
+            vids.sort(sortMethods[sort])
+        return max, vids
+
+    def search(self, type='movie', category='free', genre='all', sort='rating', offset=0, count=100, query=''):
+        if type not in self.genreCache.keys():
+            # we don't store them, we just need the cache to be updated
+            self.getGenres(type)
+        if not self.playlists:
+            self.getPlaylists() # fetch em
+        dict = {'type' : type, 'category' : category, 'genre' : genre, 'sort' : sort, 'offset' : offset, 'count' : count, 'q' : query}
         jsonData = _getURL(SEARCH_URL, urllib.urlencode(dict))
         data = json.loads(jsonData)
         max = data[u'data'][u'count']

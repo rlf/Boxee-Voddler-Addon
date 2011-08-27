@@ -29,6 +29,7 @@ CATEGORY_ID=203
 PAGE_LABEL=110
 STATUS_LABEL=120
 TRAILER_WINDOW=14025
+SEARCH_ID=145
 
 # Constants
 pageSize=100
@@ -141,7 +142,32 @@ def searchNormal(window, mainList):
         items = pageCache[currentPage]
     else:
         status("Fetching page %i" % (currentPage+1))
-        maxCount, data = voddlerapi.getAPI().search(pageType, c, g, s, offset, pageSize)
+        maxCount, data = voddlerapi.getAPI().browse(pageType, c, g, s, offset, pageSize)
+        maxPage = (maxCount-1) / pageSize
+        if maxPage < 0:
+            maxPage = 0
+        itemsOnCurrentPage = min(pageSize, maxCount, maxCount - (currentPage*pageSize))
+        for index, movie in enumerate(data):
+            status("Generating page %i of %i" % (currentPage+1, maxPage+1), index+1, itemsOnCurrentPage)
+            item = ListItem(ListItem.MEDIA_VIDEO_FEATURE_FILM)
+            movie.showOnListItem(item, offset+index)
+            items.append(item)
+        pageCache[currentPage] = items
+    mainList.SetItems(items)
+
+def searchSpecified(window, mainList):
+    global currentPage, pageCache, pageSize, maxCount, maxPage
+    g = getGenre()
+    s = getSorting()
+    c = getCategory()
+    q = getQuery()
+    offset = currentPage * pageSize
+    items = ListItems()
+    if currentPage in pageCache.keys():
+        items = pageCache[currentPage]
+    else:
+        status("Fetching page %i" % (currentPage+1))
+        maxCount, data = voddlerapi.getAPI().search(pageType, c, g, s, offset, pageSize, q)
         maxPage = (maxCount-1) / pageSize
         if maxPage < 0:
             maxPage = 0
@@ -190,10 +216,13 @@ def search(reset=False):
         pageCache.clear()
         lastPage = 0
     try:
-        if isNormal():
-            searchNormal(window, mainList)
-        elif isPlaylist():
-            searchPlaylist(window, mainList)
+        if window.GetControl(144).HasFocus():
+            searchSpecified(window, mainList)
+        else:
+            if isNormal():
+                searchNormal(window, mainList)
+            elif isPlaylist():
+                searchPlaylist(window, mainList)
         updateStatusLabel()
     finally:
         hideWaitDialog()
@@ -384,6 +413,9 @@ def _getListItemValue(listId):
 
 def getGenre():
     return _getListItemValue(GENRE_ID)
+
+def getQuery():
+    return GetActiveWindow().GetEdit(SEARCH_ID).GetText()
 
 def getSorting():
     return _getListItemValue(SORTING_ID)
