@@ -423,8 +423,8 @@ loadPage()
                 <width>50</width>
                 <height>50</height>
 				<onleft>145</onleft>
-                <texturefocus border="8">simple_search_btn.png</texturefocus>
-				<texturenofocus border="8">simple_search_btn.png</texturenofocus>
+                <texturefocus border="8">search_btn.png</texturefocus>
+				<texturenofocus border="8">search_btn.png</texturenofocus>
 				<onclick lang="python"><![CDATA[search(True)]]></onclick>
             </control>
 			<control type="image">
@@ -434,7 +434,7 @@ loadPage()
                 <posx>0</posx>
                 <width>50</width>
                 <height>50</height>
-                <texture border="8">simple_search_btn.png</texture>
+                <texture border="8">search_btn.png</texture>
             </control>
 			<control type="image"><!-- beats me why these images works how they do?? -->
                 <visible>Control.HasFocus(144)</visible>
